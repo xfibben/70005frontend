@@ -1,38 +1,116 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import {useRouter} from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import Header from "@/app/components/header";
+import Sidebar from "@/app/components/sidebar";
+import { useRouter } from 'next/navigation';
 
-export default function StudentId({ params }){
-
-    const [student, setStudent] = useState({});
+const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
+    const [student, setStudent] = useState({
+        "name": "",
+        "lastName": "",
+        "email": "",
+        "dni": "",
+        "schoolId": 0,
+        "gradeId": 0
+    });
+    const [schools, setSchools] = useState([]);
+    const [grades, setGrades] = useState([]);
+    const [hasChanged, setHasChanged] = useState(false); // Estado para rastrear cambios
     const router = useRouter();
-    
-    useEffect(()=>{
-        const fetchStudent = async () => {
 
-            try {
-                const response = await fetch(`http://localhost:5000/student/${params.id}`, {
-                    credentials: 'include'
-                });
+    useEffect(() => {
+        const fetchSchoolsAndGrades = async () => {
+            // Carga de escuelas
+            const schoolsResponse = await fetch('http://localhost:5000/school', { credentials: 'include' });
+            const schoolsData = await schoolsResponse.json();
+            setSchools(schoolsData);
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch students');
-                }
+            // Carga de grados
+            const gradesResponse = await fetch('http://localhost:5000/grade', { credentials: 'include' });
+            const gradesData = await gradesResponse.json();
+            setGrades(gradesData);
+        };
 
+        const fetchStudentData = async () => {
+            if (params.id) { // Si hay un studentId, carga los datos del estudiante
+                const response = await fetch(`http://localhost:5000/student/${params.id}`, { credentials: 'include' });
                 const data = await response.json();
                 setStudent(data);
-                console.log(data);
-            } catch (error) {
-                console.error('An error occurred:', error);
+            }else{
+                console.log('no hay studentId')
             }
         };
 
-        fetchStudent();
-    },[])
+        fetchSchoolsAndGrades();
+        fetchStudentData();
+    }, [params]);
 
-    return(
-        <div>
-            {student.name}
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updatedValue = name === 'schoolId' || name === 'gradeId' ? +value : value;
+        setStudent(prevState => {
+            // Comprobar si el valor actual es diferente al nuevo valor antes de marcar como cambiado
+            if (prevState[name] !== updatedValue) {
+                setHasChanged(true); // Marcar que ha habido cambios
+            }
+            return {
+                ...prevState,
+                [name]: updatedValue
+            };
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Previene el comportamiento por defecto del formulario
+        const method = params.id ? 'PUT' : 'POST'; // Si hay studentId, usa PUT, de lo contrario POST
+        const url = params.id ? `http://localhost:5000/student/${params.id}` : 'http://localhost:5000/student';
+
+        const response = await fetch(url, {
+            credentials: 'include',
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(student),
+        });
+
+        if (!response.ok) {
+            throw new Error(`error: ${response.statusText}`);
+        }
+
+        router.push('/students');
+    }
+
+    return (
+        <div className="grid">
+            <Header />
+            <div className='flex'>
+                <Sidebar />
+                <div className="flex">
+                    <form className="" onSubmit={handleSubmit}>
+                        <input name="name"  value={student.name} placeholder="Ingrese su nombre" onChange={handleChange}></input>
+                        <input name="lastName" value={student.lastName}placeholder="Ingrese su apellido" onChange={handleChange}></input>
+                        <input name="email" value={student.email} placeholder="Ingrese su email" onChange={handleChange}></input>
+                        <input name="dni" value={student.dni} placeholder="Ingrese su DNI" onChange={handleChange}></input>
+                        <select name="schoolId" onChange={handleChange} value={student.schoolId}>
+                            <option>Seleccione una escuela</option>
+                            {schools.map(school => (
+                                <option key={school.id} value={school.id}>{school.name}</option>
+                            ))}
+                        </select>
+                        <select name="gradeId" onChange={handleChange} value={student.gradeId}>
+                            <option>Seleccione un grado</option>
+                            {grades.map(grade => (
+                                <option key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</option>
+                            ))}
+                        </select>
+                        {hasChanged && <button type="submit">Guardar Cambios</button>}
+
+                    </form>
+                </div>
+            </div>
         </div>
-    )
+    );
 };
+
+export default StudentEdit;

@@ -2,7 +2,7 @@ import  Link  from 'next/link';
 
 export default function Sidebar() {
     return (
-        <div className="h-full w-64 bg-gray-800 text-white fixed">
+        <div className="h-full w-1/8 bg-gray-800 text-white fixed">
             <div className="flex flex-col">
                 {/* Menú Alumnos */}
                 <Link href="/students" className="flex items-center p-4 hover:bg-gray-700">
