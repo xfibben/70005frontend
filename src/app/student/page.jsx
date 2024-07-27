@@ -67,7 +67,7 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.grade.level} - {student.grade.grade}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href = {`/students/${student.id}`}>Edit</Link>
+                                            <Link href = {`/student/${student.id}`}>Edit</Link>
                                         </td>
                                     </tr>
                                 ))}

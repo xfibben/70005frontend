@@ -36,7 +36,7 @@ export default function Student() {
             }
         };
 
-        fetchStudents();
+        fetchSchools();
     }, [router]);
 
     return (
@@ -59,15 +59,15 @@ export default function Student() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {students.map((student) => (
-                                    <tr key={student.id}>
+                                {schools.map((school) => (
+                                    <tr key={school.id}>
                                         <td className="py-2 px-4 border-b border-gray-200">{school.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{school.lastName}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{school.dni}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{school.school.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{school.grade.level} - {student.grade.grade}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{school.addres}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{school.email}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{school.phone}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{school.type}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href = {`/school/${student.id}`}>Edit</Link>
+                                            <Link href = {`/school/${school.id}`}>Edit</Link>
                                         </td>
                                     </tr>
                                 ))}

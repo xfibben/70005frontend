@@ -78,7 +78,7 @@ const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
             throw new Error(`error: ${response.statusText}`);
         }
 
-        router.push('/students');
+        router.push('/student');
     }
 
     return (

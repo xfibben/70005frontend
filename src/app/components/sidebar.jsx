@@ -5,7 +5,7 @@ export default function Sidebar() {
         <div className="h-full w-1/8 bg-gray-800 text-white fixed">
             <div className="flex flex-col">
                 {/* Menú Alumnos */}
-                <Link href="/students" className="flex items-center p-4 hover:bg-gray-700">
+                <Link href="/student" className="flex items-center p-4 hover:bg-gray-700">
                     <span className="mr-3">👩‍🎓</span> Alumnos
                 </Link>
                 {/* Menú Concursos */}
@@ -13,7 +13,7 @@ export default function Sidebar() {
                     <span className="mr-3">🏆</span> Concursos
                 </Link>
                 {/* Menú Colegios */}
-                <Link href="/colegios" className="flex items-center p-4 hover:bg-gray-700">
+                <Link href="/school" className="flex items-center p-4 hover:bg-gray-700">
                     <span className="mr-3">🏫</span> Colegios
                 </Link>
                 {/* Menú Usuarios */}
