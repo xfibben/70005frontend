@@ -10,7 +10,7 @@ const SchoolCreate = () => {
         "address": "",
         "email": "",
         "phone": "",
-        "type": "",
+        "type": "Privada",
     });
 
     const router = useRouter();
