@@ -20,7 +20,7 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
 
         const fetchSchoolData = async () => {
             if (params.id) { // Si hay un studentId, carga los datos del estudiante
-                const response = await fetch(`http://localhost:5000/school/${params.id}`, { credentials: 'include' });
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school/${params.id}`, { credentials: 'include' });
                 const data = await response.json();
                 setSchool(data);
             }else{
@@ -48,7 +48,7 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
         const method = params.id ? 'PUT' : 'POST'; // Si hay studentId, usa PUT, de lo contrario POST
-        const url = params.id ? `http://localhost:5000/school/${params.id}` : 'http://localhost:5000/school';
+        const url = params.id ? `${process.env.NEXT_PUBLIC_API_PATH}school/${params.id}` : `${process.env.NEXT_PUBLIC_API_PATH}school`;
 
         const response = await fetch(url, {
             credentials: 'include',
@@ -71,18 +71,73 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
             <Header />
             <div className='flex'>
                 <Sidebar />
-                <div className="flex">
-                    <form classNam="grid">
-                        <input name="name" value={school.name}  placeholder="Ingrese nombre" onChange={handleChange}></input>
-                        <input name="address" value={school.address} placeholder="Ingrese dirección" onChange={handleChange}></input>
-                        <input name="email" value={school.email} placeholder="Ingrese correo" onChange={handleChange}></input>
-                        <input name="phone"  value={school.phone} placeholder="Ingrese teléfono" onChange={handleChange}></input>
-                        <select name="type" value={school.type} placeholder="Ingrese el tipo de institución" onChange={handleChange}>
-                            <option name="Privada" value={'Privada'}>Privada</option>
-                            <option name="Publica" value={'Publica'}>Pública</option>
-                        </select>
-                        {hasChanged && <button type="submit" onClick={handleSubmit}>Guardar cambios</button>}
+                <div className="flex ml-64">
+                    <form className="flex gap-4 p-6 bg-white shadow-md rounded-lg">
+                        <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
+                            <input 
+                                name="name" 
+                                value={school.name} 
+                                placeholder="Ingrese nombre" 
+                                onChange={handleChange} 
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Dirección</label>
+                            <input 
+                                name="address" 
+                                value={school.address} 
+                                placeholder="Ingrese dirección" 
+                                onChange={handleChange} 
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo</label>
+                            <input 
+                                name="email" 
+                                value={school.email} 
+                                placeholder="Ingrese correo" 
+                                onChange={handleChange} 
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono</label>
+                            <input 
+                                name="phone" 
+                                value={school.phone} 
+                                placeholder="Ingrese teléfono" 
+                                onChange={handleChange} 
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="type" className="block text-sm font-medium text-gray-700">Tipo de Institución</label>
+                            <select 
+                                name="type" 
+                                value={school.type} 
+                                onChange={handleChange} 
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            >
+                                <option value="Privada">Privada</option>
+                                <option value="Publica">Pública</option>
+                            </select>
+                        </div>
+                        {hasChanged && (
+                            <div>
+                                <button 
+                                    type="submit" 
+                                    onClick={handleSubmit} 
+                                    className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                                >
+                                    Guardar cambios
+                                </button>
+                            </div>
+                        )}
                     </form>
+
                 </div>
             </div>
         </div>

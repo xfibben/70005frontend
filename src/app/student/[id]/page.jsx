@@ -21,19 +21,19 @@ const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
     useEffect(() => {
         const fetchSchoolsAndGrades = async () => {
             // Carga de escuelas
-            const schoolsResponse = await fetch('http://localhost:5000/school', { credentials: 'include' });
+            const schoolsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school`, { credentials: 'include' });
             const schoolsData = await schoolsResponse.json();
             setSchools(schoolsData);
 
             // Carga de grados
-            const gradesResponse = await fetch('http://localhost:5000/grade', { credentials: 'include' });
+            const gradesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}grade`, { credentials: 'include' });
             const gradesData = await gradesResponse.json();
             setGrades(gradesData);
         };
 
         const fetchStudentData = async () => {
             if (params.id) { // Si hay un studentId, carga los datos del estudiante
-                const response = await fetch(`http://localhost:5000/student/${params.id}`, { credentials: 'include' });
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}student/${params.id}`, { credentials: 'include' });
                 const data = await response.json();
                 setStudent(data);
             }else{
@@ -63,7 +63,7 @@ const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
         const method = params.id ? 'PUT' : 'POST'; // Si hay studentId, usa PUT, de lo contrario POST
-        const url = params.id ? `http://localhost:5000/student/${params.id}` : 'http://localhost:5000/student';
+        const url = params.id ? `${process.env.NEXT_PUBLIC_API_PATH}student/${params.id}` : `${process.env.NEXT_PUBLIC_API_PATH}student`;
 
         const response = await fetch(url, {
             credentials: 'include',
@@ -86,7 +86,7 @@ const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
             <Header />
             <div className='flex'>
                 <Sidebar />
-                <div className="flex">
+                <div className="flex ml-64">
                     <form className="" onSubmit={handleSubmit}>
                         <input name="name"  value={student.name} placeholder="Ingrese su nombre" onChange={handleChange}></input>
                         <input name="lastName" value={student.lastName}placeholder="Ingrese su apellido" onChange={handleChange}></input>

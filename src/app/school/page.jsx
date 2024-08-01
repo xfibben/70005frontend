@@ -12,7 +12,7 @@ export default function Student() {
     const [schools, setSchools] = useState([]);
     const [filteredSchools, setFilteredSchools] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [schoolsPerPage] = useState(1);
+    const [schoolsPerPage] = useState(5);
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -28,7 +28,7 @@ export default function Student() {
             }
 
             try {
-                const response = await fetch('http://localhost:5000/school', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school`, {
                     credentials: 'include'
                 });
 
@@ -122,36 +122,42 @@ export default function Student() {
 
     return (
         <div className="grid">
-            <Header />
+            <Header/>
             <div>
                 <Sidebar />
-                <div className="flex-grow p-6">
+                <div className="flex-grow p-6 ml-64">
+                    <div className="flex justify-between">
+                        <h2>Escuelas</h2>
+                        <button Link className="bg-green-500 p-2 rounded" >
+                            <Link href={`/school/create`}>Crear nueva Escuela</Link>
+                        </button>
+                    </div>
                     <SearchBar onSearch={handleSearch} />
                     <select onChange={(e) => handleTypeFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los tipos</option>
-                        <option value="Público">Público</option>
-                        <option value="Privado">Privado</option>
+                        <option value="Publica">Público</option>
+                        <option value="Privada">Privado</option>
                     </select>
                     <div className="bg-white shadow-md rounded p-6 mt-4">
                         <table className="min-w-full bg-white">
                             <thead>
                                 <tr>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('name')}>
-                                        Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('addres')}>
-                                        Address {sortConfig.key === 'addres' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Dirección {sortConfig.key === 'addres' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('email')}>
-                                        Email {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Correo {sortConfig.key === 'email' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('phone')}>
-                                        Phone {sortConfig.key === 'phone' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Celular {sortConfig.key === 'phone' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('type')}>
-                                        Type {sortConfig.key === 'type' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Tipo {sortConfig.key === 'type' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
-                                    <th className="py-2 px-4 border-b border-gray-200">Actions</th>
+                                    <th className="py-2 px-4 border-b border-gray-200">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -163,7 +169,7 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{school.phone || 'N/A'}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{school.type || 'N/A'}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/school/${school.id}`}>Edit</Link>
+                                            <Link href={`/school/${school.id}`}>Editar</Link>
                                         </td>
                                     </tr>
                                 ))}

@@ -21,7 +21,7 @@ const StudentCreate = () => {
         // Simulación de carga de datos desde una API
         // Reemplazar con la llamada real a la API
         const fetchSchools = async () => {
-            const response = await fetch('http://localhost:5000/school', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school`, {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -29,7 +29,7 @@ const StudentCreate = () => {
         };
 
         const fetchGrades = async () => {
-            const response = await fetch('http://localhost:5000/grade', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}grade`, {
                 credentials: 'include'}
             );
             const data = await response.json();
@@ -50,7 +50,7 @@ const StudentCreate = () => {
     };
 
     const handleSubmit = async (student) => {
-    const response = await fetch('http://localhost:5000/student', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}student`, {
         credentials: 'include',
         method: 'POST',
         headers: {
@@ -81,7 +81,7 @@ const StudentCreate = () => {
             <Header />
             <div className='flex'>
                 <Sidebar />
-                <div className="flex">
+                <div className="ml-64 flex">
                     <form classNam="grid">
                         <input name="name"  placeholder="Ingrese su nombre" onChange={handleChange}></input>
                         <input name="lastName" placeholder="Ingrese su apellido" onChange={handleChange}></input>

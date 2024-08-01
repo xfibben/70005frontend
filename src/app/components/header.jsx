@@ -17,7 +17,7 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             // Llamar a la API /auth/logout
-            await fetch('http://localhost:5000/auth/logout', {
+            await fetch(`${process.env.NEXT_PUBLIC_API_PATH}auth/logout`, {
                 method: 'POST', // o GET, dependiendo de cómo esté configurada tu API
                 credentials: 'include', // Asegura que las cookies se envíen con la solicitud
             });
