@@ -3,6 +3,8 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import { Button, TextField } from '@mui/material';
+
 
 const Login = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
@@ -51,41 +53,15 @@ const Login = () => {
     return (
         <form onSubmit={handleSubmit} className="flex justify-center items-center h-screen">
             <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-                <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                        Usuario
-                    </label>
-                    <input
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="username"
-                        name="username"
-                        type="text"
-                        placeholder="Ingrese su usuario"
-                        value={credentials.username}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-6">
-                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                        Contraseña
-                    </label>
-                    <input
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Ingrese su contraseña"
-                        value={credentials.password}
-                        onChange={handleChange}
-                    />
+                <div className="mb-4 grid">
+ 
+                    <TextField label={'Ingrese su usuario'} value={credentials.username}
+                        onChange={handleChange} name='username'></TextField>
+                    <TextField label={'Ingrese su contraseña'} value={credentials.password}
+                        onChange={handleChange} type='password' name='password'></TextField>
                 </div>
                 <div className="flex items-center justify-between">
-                    <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                        type="submit"
-                    >
-                        Iniciar sesión
-                    </button>
+                    <Button variant="contained" type='submit'>Ingresar</Button>
                 </div>
                 <Link href="/register">Crear cuenta</Link>
             </div>
