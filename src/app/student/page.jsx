@@ -137,7 +137,12 @@ export default function Student() {
             <div className='flex'>
                 <Sidebar />
                 <div className="ml-64 flex-grow p-6">
-                    <h2>Estudiantes</h2>
+                    <div className="flex justify-between">
+                        <h2>Escuelas</h2>
+                        <button Link className="bg-green-500 p-2 rounded" >
+                            <Link href={`/student/create`}>Crear nuevo Estudiante</Link>
+                        </button>
+                    </div>
                     <SearchBar onSearch={handleSearch} />
                     <select onChange={(e) => handleGradeFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los grados</option>

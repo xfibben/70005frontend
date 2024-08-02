@@ -182,7 +182,7 @@ export default function Student() {
                             disabled={currentPage === 1} 
                             className="mr-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
                         >
-                            Previous
+                            Anterior
                         </button>
                         {generatePageNumbers().map(number => (
                             <button
