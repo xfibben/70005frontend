@@ -13,10 +13,10 @@ export default function Sidebar() {
                 <Link href="/school" className="flex items-center p-4 hover:bg-gray-700">
                     <span className="mr-3">🏫</span> Colegios
                 </Link>
-                <Link href="/usuarios" className="flex items-center p-4 hover:bg-gray-700">
+                <Link href="/user" className="flex items-center p-4 hover:bg-gray-700">
                     <span className="mr-3">👥</span> Usuarios
                 </Link>
-                <Link href="/pruebas" className="flex items-center p-4 hover:bg-gray-700">
+                <Link href="/test" className="flex items-center p-4 hover:bg-gray-700">
                     <span className="mr-3">📝</span> Pruebas
                 </Link>
             </div>
