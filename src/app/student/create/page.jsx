@@ -68,7 +68,7 @@ const StudentCreate = () => {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.indexOf("application/json") !== -1) {
         const data = await response.json();
-        router.push('/students');
+        router.push('/student');
         return data;
     } else {
       throw new Error("Received non-JSON response from server");

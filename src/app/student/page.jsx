@@ -79,12 +79,12 @@ export default function Student() {
                 (student.dni && student.dni.toString().toLowerCase().includes(searchTermLower)) ||
                 (student.school.name && student.school.name.toLowerCase().includes(searchTermLower)) ||
                 (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.grade && student.grade.grade.toLowerCase().includes(searchTermLower))
+                (student.grade.grade)
             );
         }
 
         if (grade) {
-            filtered = filtered.filter(student => student.grade.level === grade);
+            filtered = filtered.filter(student => student.grade.grade === grade);
         }
 
         setFilteredStudents(filtered);
@@ -181,7 +181,7 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.grade.level} - {student.grade.grade}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/student/${student.id}`}>Edit</Link>
+                                            <Link href={`/student/${student.id}`}>Editar</Link>
                                         </td>
                                     </tr>
                                 ))}

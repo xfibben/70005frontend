@@ -9,19 +9,19 @@ import Link from "next/link";
 import SearchBar from "../components/searcher";
 
 export default function Student() {
-    const [students, setStudents] = useState([]);
-    const [grades, setGrades] = useState([]);
-    const [filteredStudents, setFilteredStudents] = useState([]);
+    const [tests, setTests] = useState([]);
+    const [contests, setContests] = useState([]);
+    const [filteredTests, setFilteredTests] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [studentsPerPage] = useState(3);
+    const [testsPerPage] = useState(5);
     const [searchTerm, setSearchTerm] = useState('');
-    const [gradeFilter, setGradeFilter] = useState('');
+    const [contestFilter, setContestFilter] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
     const router = useRouter();
 
     useEffect(() => {
-        const fetchStudents = async () => {
+        const fetchTests = async () => {
             const token = Cookies.get('jwt');
             if (!token) {
                 router.push('/login');
@@ -29,65 +29,62 @@ export default function Student() {
             }
 
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}student`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}test`, {
                     credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch students');
+                    throw new Error('No se pudieron obtener las pruebas');
                 }
 
                 const data = await response.json();
-                setStudents(data);
-                setFilteredStudents(data);
+                setTests(data);
+                setFilteredTests(data);
             } catch (error) {
                 console.error('An error occurred:', error);
                 router.push('/login');
             }
         };
 
-        const fetchGrades = async () => {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}grade`, {
+        const fetchContests = async () => {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest`, {
                 credentials: 'include'}
             );
             const data = await response.json();
-            setGrades(data);
+            setContests(data);
         };
 
-        fetchStudents();
-        fetchGrades();
+        fetchTests();
+        fetchContests();
     }, [router]);
 
     const handleSearch = (term) => {
         setSearchTerm(term);
-        filterStudents(term, gradeFilter);
+        filterTests(term, contestFilter);
     };
 
-    const handleGradeFilter = (grade) => {
-        setGradeFilter(grade);
-        filterStudents(searchTerm, grade);
+    const handleContestFilter = (contest) => {
+        setContestFilter(contest);
+        filterTests(searchTerm, contest);
     };
 
-    const filterStudents = (term, grade) => {
-        let filtered = students;
+    const filterTests = (term, contest) => {
+        let filtered = tests;
 
         if (term) {
             const searchTermLower = term.toLowerCase();
-            filtered = filtered.filter(student =>
-                (student.name && student.name.toLowerCase().includes(searchTermLower)) ||
-                (student.lastName && student.lastName.toLowerCase().includes(searchTermLower)) ||
-                (student.dni && student.dni.toString().toLowerCase().includes(searchTermLower)) ||
-                (student.school.name && student.school.name.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.grade && student.grade.grade.toLowerCase().includes(searchTermLower))
+            filtered = filtered.filter(test =>
+                (test.name && test.name.toLowerCase().includes(searchTermLower)) ||
+                (test.date && test.date.toLowerCase().includes(searchTermLower)) ||
+                (test.contestId &&  te)
             );
         }
 
-        if (grade) {
-            filtered = filtered.filter(student => student.grade.level === grade);
+        if (contest) {
+            filtered = filtered.filter(test => test.contestId === contest);
         }
 
-        setFilteredStudents(filtered);
+        setFilteredTests(filtered);
         setCurrentPage(1);
     };
 
@@ -99,8 +96,8 @@ export default function Student() {
         setSortConfig({ key, direction });
     };
 
-    const sortedStudents = React.useMemo(() => {
-        let sortableItems = [...filteredStudents];
+    const sortedTests = React.useMemo(() => {
+        let sortableItems = [...filteredTests];
         if (sortConfig.key !== null) {
             sortableItems.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -113,19 +110,19 @@ export default function Student() {
             });
         }
         return sortableItems;
-    }, [filteredStudents, sortConfig]);
+    }, [filteredTests, sortConfig]);
 
-    // Get current students
-    const indexOfLastStudent = currentPage * studentsPerPage;
-    const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-    const currentStudents = sortedStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+    // Get current tests
+    const indexOfLastTest = currentPage * testsPerPage;
+    const indexOfFirstTest = indexOfLastTest - testsPerPage;
+    const currentTests = sortedTests.slice(indexOfFirstTest, indexOfLastTest);
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const generatePageNumbers = () => {
         const pageNumbers = [];
-        for (let i = 1; i <= Math.ceil(sortedStudents.length / studentsPerPage); i++) {
+        for (let i = 1; i <= Math.ceil(sortedTests.length / testsPerPage); i++) {
             pageNumbers.push(i);
         }
         return pageNumbers;
@@ -138,50 +135,42 @@ export default function Student() {
                 <Sidebar />
                 <div className="ml-64 flex-grow p-6">
                     <div className="flex justify-between">
-                        <h2>Escuelas</h2>
+                        <h2>Pruebas</h2>
                         <button Link className="bg-green-500 p-2 rounded" >
                             <Link href={`/test/create`}>Crear nueva Prueba</Link>
                         </button>
                     </div>
                     <SearchBar onSearch={handleSearch} />
-                    <select onChange={(e) => handleGradeFilter(e.target.value)} className="mb-4">
-                        <option value="">Todos los grados</option>
-                        {grades.map(grade => (
-                                <option key={grade.id} value={`${grade.grade}-${grade.level}`}>{grade.grade}-{grade.level}</option>
-                            ))}
+                    <select onChange={(e) => handleContestFilter(e.target.value)} className="mb-4">
+                        <option value="">Todos los concursos</option>
+                        {contests.map(contest => (
+                            <option key={contest.id} value={contest.id}>{contest.name}</option>
+                        ))}
                     </select>
                     <div className="bg-white shadow-md rounded p-6 mt-4">
                         <table className="min-w-full bg-white">
                             <thead>
                                 <tr>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('name')}>
-                                        Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('lastName')}>
-                                        Last Name {sortConfig.key === 'lastName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('date')}>
+                                        Fecha {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('dni')}>
-                                        DNI {sortConfig.key === 'dni' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('contestId')}>
+                                        Concurso {sortConfig.key === 'contestId' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('school.name')}>
-                                        School {sortConfig.key === 'school.name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                    </th>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
-                                        Grade {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                    </th>
-                                    <th className="py-2 px-4 border-b border-gray-200">Actions</th>
+                                    <th className="py-2 px-4 border-b border-gray-200">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentStudents.map((student) => (
-                                    <tr key={student.id}>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.lastName}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.dni}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.grade.level} - {student.grade.grade}</td>
+                                {currentTests.map((test) => (
+                                    <tr key={test.id}>
+                                        <td className="py-2 px-4 border-b border-gray-200">{test.name}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{test.date}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{contests.find(contest => contest.id === test.contestId)?.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/student/${student.id}`}>Edit</Link>
+                                            <Link href={`/test/${test.id}`}>Editar</Link>
                                         </td>
                                     </tr>
                                 ))}
@@ -207,7 +196,7 @@ export default function Student() {
                         ))}
                         <button
                             onClick={() => paginate(currentPage + 1)}
-                            disabled={indexOfLastStudent >= sortedStudents.length}
+                            disabled={indexOfLastTest >= sortedTests.length}
                             className="ml-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
                         >
                             Siguiente
