@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
-import Modal from 'react-modal'; // Asegúrate de instalar react-modal
+import Modal from 'react-modal';
 
 const TestEdit = ({ params }) => {
+    // ... (código anterior sin cambios)
     const [test, setTest] = useState({
         "name": "",
         "time": 0,
@@ -23,11 +24,55 @@ const TestEdit = ({ params }) => {
     const [filteredStudents, setFilteredStudents] = useState([]);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' }); // Inicializar sortConfig
     const [currentPage, setCurrentPage] = useState(1);
-    const [resultsPerPage] = useState(5);
+    const [resultsPerPage] = useState(30);
     const [testResults, setTestResults] = useState([]);
     const [newResult, setNewResult] = useState({ studentId: 0, testId: parseInt(params.id), score: 0, time: 0 });
 
     const router = useRouter();
+
+    const [sortBy, setSortBy] = useState('lastName');
+
+    // ... (otros estados y efectos sin cambios)
+
+    const requestSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+        setSortBy(key);
+    };
+
+    const sortedTestResults = React.useMemo(() => {
+        let sortableItems = [...testResults];
+        if (sortBy === 'lastName') {
+            sortableItems.sort((a, b) => {
+                const lastNameA = a.student.lastName.toLowerCase();
+                const lastNameB = b.student.lastName.toLowerCase();
+                if (lastNameA < lastNameB) return -1;
+                if (lastNameA > lastNameB) return 1;
+                return a.student.name.toLowerCase().localeCompare(b.student.name.toLowerCase());
+            });
+        } else if (sortBy === 'score') {
+            sortableItems.sort((a, b) => {
+                if (b.score !== a.score) {
+                    return b.score - a.score;
+                }
+                return a.time - b.time;
+            });
+        } else if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [testResults, sortConfig, sortBy]);
 
     useEffect(() => {
         const fetchContestsAndGrades = async () => {
@@ -57,7 +102,7 @@ const TestEdit = ({ params }) => {
         };
 
         const fetchTestResults = async () => {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification?testId=${params.id}`, { credentials: 'include' });
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification/test/${params.id}`, { credentials: 'include' });
             const data = await response.json();
             setTestResults(data);
         };
@@ -138,7 +183,7 @@ const TestEdit = ({ params }) => {
         if (response.ok) {
             const result = await response.json();
             setTestResults([...testResults, result]);
-            closeModal();
+            useRouter.push(`/test/${params.id}`);
         } else {
             console.error('Error al agregar el resultado del test');
         }
@@ -153,10 +198,11 @@ const TestEdit = ({ params }) => {
 
     const saveResult = async (index) => {
         const result = { ...testResults[index] };
+        console.log(result);
     
         // Convertir los campos 'time' y 'score' a números
         if (result.time) {
-            result.time = parseInt(result.time, 10);
+            result.time = parseFloat(result.time);
         }
         if (result.score) {
             result.score = parseFloat(result.score);
@@ -185,29 +231,9 @@ const TestEdit = ({ params }) => {
         }
     };
 
-    const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
+    
 
-    const sortedTestResults = React.useMemo(() => {
-        let sortableItems = [...testResults];
-        if (sortConfig.key !== null) {
-            sortableItems.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
-        return sortableItems;
-    }, [testResults, sortConfig]);
+
 
     const indexOfLastResult = currentPage * resultsPerPage;
     const indexOfFirstResult = indexOfLastResult - resultsPerPage;
@@ -223,9 +249,23 @@ const TestEdit = ({ params }) => {
         return pageNumbers;
     };
 
+    // ... (otras funciones sin cambios)
+
+    const deleteResult = async (id) => {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification/${id}`, {
+            credentials: 'include',
+            method: 'DELETE',
+        });
+
+        if (response.ok) {
+            setTestResults(testResults.filter(result => result.id !== id));
+        } else {
+            console.error('Error al eliminar el resultado');
+        }
+    };
 
     return (
-        <div className="grid min-h-screen">
+        <div className="grid">
             <Header />
             <div className='flex flex-1'>
                 <Sidebar />
@@ -237,7 +277,7 @@ const TestEdit = ({ params }) => {
                         <select name="gradeId" onChange={handleChange} value={test.gradeId} className="border p-2 w-full">
                             <option>Seleccione un grado</option>
                             {grades.map(grade => (
-                                <option key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</option>
+                                <option key={grade.id} value={grade.id}>{grade.level}</option>
                             ))}
                         </select>
                         <select name="contestId" onChange={handleChange} value={test.contestId} className="border p-2 w-full">
@@ -249,7 +289,7 @@ const TestEdit = ({ params }) => {
                         {hasChanged && <button type="submit" className="bg-blue-500 text-white p-2 rounded mt-4">Guardar Cambios</button>}
                     </form>
 
-                    <button onClick={openModal} className="bg-blue-500 text-white p-2 rounded mt-4">Agregar Resultado</button>
+                    <button onClick={openModal} className="bg-blue-500 text-white p-2 rounded mt-4">Inscribir alumno</button>
 
                     <Modal
                         isOpen={modalIsOpen}
@@ -273,7 +313,7 @@ const TestEdit = ({ params }) => {
                             <option value="">Seleccione un estudiante</option>
                             {filteredStudents.map(student => (
                                 <option key={student.id} value={student.id}>
-                                    {student.name} {student.lastName} {student.dni}
+                                    {student.lastName} {student.name} {student.dni}
                                 </option>
                             ))}
                         </select>
@@ -284,16 +324,18 @@ const TestEdit = ({ params }) => {
                     <table className="min-w-full bg-white mt-8">
                         <thead>
                             <tr>
-                                <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('studentId')}>ID del Estudiante</th>
-                                <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('testId')}>ID del Test</th>
+                                <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('lastName')}>Apellido</th>
+                                <th className="py-2 px-4 border-b border-gray-200">Nombre</th>
+                                <th className="py-2 px-4 border-b border-gray-200">Nombre del Test</th>
                                 <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('score')}>Puntaje</th>
-                                <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('time')}>Tiempo</th>
+                                <th className="py-2 px-4 border-b border-gray-200">Tiempo</th>
                                 <th className="py-2 px-4 border-b border-gray-200">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentResults.map((result, index) => (
                                 <tr key={result.id}>
+                                    <td className="py-2 px-4 border-b border-gray-200">{result.student.lastName}</td>
                                     <td className="py-2 px-4 border-b border-gray-200">{result.student.name}</td>
                                     <td className="py-2 px-4 border-b border-gray-200">{result.test.name}</td>
                                     <td className="py-2 px-4 border-b border-gray-200">
@@ -316,6 +358,7 @@ const TestEdit = ({ params }) => {
                                     </td>
                                     <td className="py-2 px-4 border-b border-gray-200">
                                         <button onClick={() => saveResult(index)} className="bg-green-500 text-white p-2 rounded">Guardar</button>
+                                        <button onClick={() => deleteResult(result.id)} className="bg-red-500 text-white p-2 rounded ml-2">Eliminar</button>
                                     </td>
                                 </tr>
                             ))}
@@ -332,7 +375,6 @@ const TestEdit = ({ params }) => {
             </div>
         </div>
     );
-    
 };
 
 export default TestEdit;

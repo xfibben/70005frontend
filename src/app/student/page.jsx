@@ -13,7 +13,7 @@ export default function Student() {
     const [grades, setGrades] = useState([]);
     const [filteredStudents, setFilteredStudents] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [studentsPerPage] = useState(3);
+    const [studentsPerPage] = useState(30);
     const [searchTerm, setSearchTerm] = useState('');
     const [gradeFilter, setGradeFilter] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -64,6 +64,7 @@ export default function Student() {
     };
 
     const handleGradeFilter = (grade) => {
+        console.log(grade);
         setGradeFilter(grade);
         filterStudents(searchTerm, grade);
     };
@@ -78,13 +79,12 @@ export default function Student() {
                 (student.lastName && student.lastName.toLowerCase().includes(searchTermLower)) ||
                 (student.dni && student.dni.toString().toLowerCase().includes(searchTermLower)) ||
                 (student.school.name && student.school.name.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.grade)
+                (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower))
             );
         }
 
         if (grade) {
-            filtered = filtered.filter(student => student.grade.grade === grade);
+            filtered = filtered.filter(student => student.grade.level === grade);
         }
 
         setFilteredStudents(filtered);
@@ -138,7 +138,7 @@ export default function Student() {
                 <Sidebar />
                 <div className="ml-64 flex-grow p-6">
                     <div className="flex justify-between">
-                        <h2>Escuelas</h2>
+                        <h2>Alumnos</h2>
                         <button Link className="bg-green-500 p-2 rounded" >
                             <Link href={`/student/create`}>Crear nuevo Estudiante</Link>
                         </button>
@@ -147,7 +147,7 @@ export default function Student() {
                     <select onChange={(e) => handleGradeFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los grados</option>
                         {grades.map(grade => (
-                                <option key={grade.id} value={`${grade.grade}-${grade.level}`}>{grade.grade}-{grade.level}</option>
+                                <option key={grade.id} value={grade.level}>{grade.level}</option>
                             ))}
                     </select>
                     <div className="bg-white shadow-md rounded p-6 mt-4">
@@ -179,7 +179,7 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{student.lastName}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.dni}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.grade.level} - {student.grade.grade}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{student.grade.level}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
                                             <Link href={`/student/${student.id}`}>Editar</Link>
                                         </td>

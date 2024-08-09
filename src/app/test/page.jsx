@@ -76,12 +76,12 @@ export default function Student() {
             filtered = filtered.filter(test =>
                 (test.name && test.name.toLowerCase().includes(searchTermLower)) ||
                 (test.date && test.date.toLowerCase().includes(searchTermLower)) ||
-                (test.contestId &&  te)
+                (test.contest.name && test.contest.name.toLowerCase(searchTermLower))
             );
         }
 
         if (contest) {
-            filtered = filtered.filter(test => test.contestId === contest);
+            filtered = filtered.filter(test => test.contest.name === contest);
         }
 
         setFilteredTests(filtered);
@@ -144,7 +144,7 @@ export default function Student() {
                     <select onChange={(e) => handleContestFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los concursos</option>
                         {contests.map(contest => (
-                            <option key={contest.id} value={contest.id}>{contest.name}</option>
+                            <option key={contest.id} value={contest.name}>{contest.name}</option>
                         ))}
                     </select>
                     <div className="bg-white shadow-md rounded p-6 mt-4">

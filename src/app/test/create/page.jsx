@@ -43,13 +43,23 @@ const TestCreate = () => {
     }, []);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        const updatedValue = name === 'contestId' || name === 'gradeId' || name === 'time' ? +value : value;
+    const { name, value } = e.target;
+    const updatedValue = name === 'contestId' || name === 'gradeId' || name === 'time' ? +value : value;
+
+    if (name === 'contestId') {
+        const selectedContest = contests.find(contest => contest.id === +value);
+        setTest(prevState => ({
+            ...prevState,
+            [name]: updatedValue,
+            date: selectedContest ? selectedContest.date : ""
+        }));
+    } else {
         setTest(prevState => ({
             ...prevState,
             [name]: updatedValue
         }));
-    };
+    }
+};
 
     async function handleSubmit(e) {
         e.preventDefault(); // Prevent the default form submission behavior
@@ -85,15 +95,15 @@ const TestCreate = () => {
                             </Select>
                         </FormControl>
                         <FormControl variant="outlined">
-                            <InputLabel>Seleccione una grado</InputLabel>
+                            <InputLabel>Seleccione un grado</InputLabel>
                             <Select
                               name="gradeId"
                               onChange={handleChange}
                               label="Seleccione una grado"
                             >
-                              <MenuItem value=""><em>Seleccione una grado</em></MenuItem>
+                              <MenuItem value=""><em>Seleccione un grado</em></MenuItem>
                               {grades.map(grade => (
-                                <MenuItem key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</MenuItem>
+                                <MenuItem key={grade.id} value={grade.id}>{grade.level}</MenuItem>
                               ))}
                             </Select>
                         </FormControl>
