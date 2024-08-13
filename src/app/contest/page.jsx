@@ -7,14 +7,16 @@ import Cookies from 'js-cookie';
 import Sidebar from "../components/sidebar";
 import Link from "next/link";
 import SearchBar from "../components/searcher";
+import { Button, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Paper, Alert } from '@mui/material';
 
 export default function Contest() {
     const [contests, setContests] = useState([]);
     const [filteredContests, setFilteredContests] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [contestsPerPage] = useState(5);
+    const [contestsPerPage] = useState(30);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+    const [error, setError] = useState('');
 
     const router = useRouter();
 
@@ -40,6 +42,7 @@ export default function Contest() {
                 setFilteredContests(data);
             } catch (error) {
                 console.error('Ocurrió un error:', error);
+                setError(error.message);
                 router.push('/login');
             }
         };
@@ -54,10 +57,10 @@ export default function Contest() {
 
     const filterContests = (term) => {
         let filtered = contests;
-        
+
         if (term) {
             const searchTermLower = term.toLowerCase();
-            filtered = filtered.filter(contest => 
+            filtered = filtered.filter(contest =>
                 (contest.name && contest.name.toLowerCase().includes(searchTermLower)) ||
                 (contest.date && contest.date.toLowerCase().includes(searchTermLower))
             );
@@ -73,6 +76,26 @@ export default function Contest() {
             direction = 'descending';
         }
         setSortConfig({ key, direction });
+    };
+
+    const handleDelete = async (id) => {
+        setError('');
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest/${id}`, {
+                credentials: 'include',
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el concurso');
+            }
+
+            setContests(prev => prev.filter(contest => contest.id !== id));
+            setFilteredContests(prev => prev.filter(contest => contest.id !== id));
+        } catch (error) {
+            console.error('Error:', error);
+            setError(error.message);
+        }
     };
 
     const sortedContests = React.useMemo(() => {
@@ -109,67 +132,81 @@ export default function Contest() {
 
     return (
         <div className="grid">
-            <Header/>
-            <div>
+            <Header />
+            <div className='flex'>
                 <Sidebar />
-                <div className="flex-grow p-6 ml-64">
-                    <div className="flex justify-between">
+                <div className="ml-64 flex-grow p-6">
+                    <div className="flex justify-between mb-4">
                         <h2>Concursos</h2>
-                        <button className="bg-green-500 p-2 rounded">
-                            <Link href={`/contest/create`}>Crear nuevo Concurso</Link>
-                        </button>
+                        <Button variant="contained" color="primary">
+                            <Link href={`/contest/create`} className="text-white">Crear nuevo Concurso</Link>
+                        </Button>
                     </div>
+                    {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
                     <SearchBar onSearch={handleSearch} />
-                    <div className="bg-white shadow-md rounded p-6 mt-4">
-                        <table className="min-w-full bg-white">
-                            <thead>
-                                <tr>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('name')}>
+                    <TableContainer component={Paper} className="mt-4">
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell onClick={() => requestSort('name')} className="cursor-pointer">
                                         Nombre {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                    </th>
-                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('date')}>
+                                    </TableCell>
+                                    <TableCell onClick={() => requestSort('date')} className="cursor-pointer">
                                         Fecha {sortConfig.key === 'date' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                    </th>
-                                    <th className="py-2 px-4 border-b border-gray-200">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                    </TableCell>
+                                    <TableCell>Acciones</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
                                 {currentContests.map((contest) => (
-                                    <tr key={contest.id}>
-                                        <td className="py-2 px-4 border-b border-gray-200">{contest.name || 'N/A'}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{contest.date || 'N/A'}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/contest/${contest.id}`}>Editar</Link>
-                                        </td>
-                                    </tr>
+                                    <TableRow key={contest.id}>
+                                        <TableCell>{contest.name || 'N/A'}</TableCell>
+                                        <TableCell>{contest.date || 'N/A'}</TableCell>
+                                        <TableCell>
+                                            <Link href={`/contest/${contest.id}`} className="text-blue-600 hover:underline">Editar</Link>
+                                            <Button
+                                                color="secondary"
+                                                onClick={() => handleDelete(contest.id)}
+                                                className="ml-4"
+                                            >
+                                                Eliminar
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
                                 ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                     <div className="mt-4 flex items-center justify-center">
-                        <button 
-                            onClick={() => paginate(currentPage - 1)} 
-                            disabled={currentPage === 1} 
-                            className="mr-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                        <Button
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="mr-2"
+                            variant="contained"
+                            color="primary"
                         >
                             Anterior
-                        </button>
+                        </Button>
                         {generatePageNumbers().map(number => (
-                            <button
+                            <Button
                                 key={number}
                                 onClick={() => paginate(number)}
-                                className={`mx-1 px-3 py-1 rounded ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                                variant={currentPage === number ? "contained" : "outlined"}
+                                color="primary"
+                                className="mx-1"
                             >
                                 {number}
-                            </button>
+                            </Button>
                         ))}
-                        <button 
-                            onClick={() => paginate(currentPage + 1)} 
-                            disabled={indexOfLastContest >= sortedContests.length} 
-                            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+                        <Button
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={indexOfLastContest >= sortedContests.length}
+                            className="ml-2"
+                            variant="contained"
+                            color="primary"
                         >
                             Siguiente
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

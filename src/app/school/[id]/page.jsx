@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
-import Student from '../page';
+import { Grid, TextField, Button, Select, MenuItem, InputLabel, FormControl, Alert } from '@mui/material';
 
-const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
+const SchoolEdit = ({ params }) => {
     const [school, setSchool] = useState({
         "name": "",
         "address": "",
@@ -14,17 +14,17 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
         "type": "",
     });
     const [hasChanged, setHasChanged] = useState(false); // Estado para rastrear cambios
+    const [error, setError] = useState(''); // Estado para manejar errores
     const router = useRouter();
 
     useEffect(() => {
-
         const fetchSchoolData = async () => {
-            if (params.id) { // Si hay un studentId, carga los datos del estudiante
+            if (params.id) {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school/${params.id}`, { credentials: 'include' });
                 const data = await response.json();
                 setSchool(data);
-            }else{
-                console.log('no existe este Colegio.')
+            } else {
+                console.log('No existe este colegio.');
             }
         };
 
@@ -34,9 +34,8 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
     const handleChange = (e) => {
         const { name, value } = e.target;
         setSchool(prevState => {
-            // Comprobar si el valor actual es diferente al nuevo valor antes de marcar como cambiado
             if (prevState[name] !== value) {
-                setHasChanged(true); // Marcar que ha habido cambios
+                setHasChanged(true);
             }
             return {
                 ...prevState,
@@ -47,97 +46,118 @@ const SchoolEdit = ({ params }) => { // Asume que recibes studentId como prop
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
-        const method = params.id ? 'PUT' : 'POST'; // Si hay studentId, usa PUT, de lo contrario POST
-        const url = params.id ? `${process.env.NEXT_PUBLIC_API_PATH}school/${params.id}` : `${process.env.NEXT_PUBLIC_API_PATH}school`;
+        setError(''); // Resetea el error al intentar enviar el formulario
 
-        const response = await fetch(url, {
-            credentials: 'include',
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(school),
-        });
+        try {
+            const method = params.id ? 'PUT' : 'POST';
+            const url = params.id ? `${process.env.NEXT_PUBLIC_API_PATH}school/${params.id}` : `${process.env.NEXT_PUBLIC_API_PATH}school`;
 
-        if (!response.ok) {
-            throw new Error(`error: ${response.statusText}`);
+            const response = await fetch(url, {
+                credentials: 'include',
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(school),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
+            }
+
+            router.push('/school');
+        } catch (error) {
+            setError(error.message); // Almacena el mensaje de error
         }
-
-        router.push('/school');
-    }
+    };
 
     return (
         <div className="grid">
             <Header />
             <div className='flex'>
                 <Sidebar />
-                <div className="flex ml-64">
-                    <form className="flex gap-4 p-6 bg-white shadow-md rounded-lg">
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
-                            <input 
-                                name="name" 
-                                value={school.name} 
-                                placeholder="Ingrese nombre" 
-                                onChange={handleChange} 
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Dirección</label>
-                            <input 
-                                name="address" 
-                                value={school.address} 
-                                placeholder="Ingrese dirección" 
-                                onChange={handleChange} 
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo</label>
-                            <input 
-                                name="email" 
-                                value={school.email} 
-                                placeholder="Ingrese correo" 
-                                onChange={handleChange} 
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Teléfono</label>
-                            <input 
-                                name="phone" 
-                                value={school.phone} 
-                                placeholder="Ingrese teléfono" 
-                                onChange={handleChange} 
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="type" className="block text-sm font-medium text-gray-700">Tipo de Institución</label>
-                            <select 
-                                name="type" 
-                                value={school.type} 
-                                onChange={handleChange} 
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            >
-                                <option value="Privada">Privada</option>
-                                <option value="Publica">Pública</option>
-                            </select>
-                        </div>
-                        {hasChanged && (
-                            <div>
-                                <button 
-                                    type="submit" 
-                                    onClick={handleSubmit} 
-                                    className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                >
-                                    Guardar cambios
-                                </button>
-                            </div>
-                        )}
+                <div className="ml-64 flex-grow p-6">
+                    <form className="form-container" onSubmit={handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                {error && (
+                                    <Alert severity="error" onClose={() => setError('')}>
+                                        {error}
+                                    </Alert>
+                                )}
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="name"
+                                    label="Nombre"
+                                    value={school.name}
+                                    placeholder="Ingrese nombre"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="address"
+                                    label="Dirección"
+                                    value={school.address}
+                                    placeholder="Ingrese dirección"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="email"
+                                    label="Correo"
+                                    value={school.email}
+                                    placeholder="Ingrese correo"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="phone"
+                                    label="Teléfono"
+                                    value={school.phone}
+                                    placeholder="Ingrese teléfono"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel>Tipo de Institución</InputLabel>
+                                    <Select
+                                        name="type"
+                                        value={school.type}
+                                        onChange={handleChange}
+                                        label="Tipo de Institución"
+                                    >
+                                        <MenuItem value="PRIVADA">Privada</MenuItem>
+                                        <MenuItem value="PUBLICA">Pública</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            {hasChanged && (
+                                <Grid item xs={12}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        type="submit"
+                                    >
+                                        Guardar cambios
+                                    </Button>
+                                </Grid>
+                            )}
+                        </Grid>
                     </form>
-
                 </div>
             </div>
         </div>

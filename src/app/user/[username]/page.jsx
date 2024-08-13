@@ -5,39 +5,41 @@ import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
 import { Grid, TextField, Button, Alert } from '@mui/material';
 
-const ContestEdit = ({ params }) => {
-    const [contest, setContest] = useState({
+const UserEdit = ({ params }) => {
+    const [user, setUser] = useState({
+        "username": "",
+        "email": "",
         "name": "",
-        "date": "",
+        "password": ""
     });
     const [hasChanged, setHasChanged] = useState(false);
     const [error, setError] = useState('');
     const router = useRouter();
 
     useEffect(() => {
-        const fetchContestData = async () => {
-            if (params.id) {
+        const fetchUserData = async () => {
+            if (params.username) {
                 try {
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest/${params.id}`, { credentials: 'include' });
+                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}users/${params.username}`, { credentials: 'include' });
                     if (!response.ok) {
-                        throw new Error('No se pudo obtener los datos del concurso');
+                        throw new Error('No se pudo obtener los datos del usuario');
                     }
                     const data = await response.json();
-                    setContest(data);
+                    setUser(data);
                 } catch (error) {
                     setError(error.message);
                 }
             } else {
-                console.log('No se proporcionó un contestId');
+                console.log('No se proporcionó username');
             }
         };
 
-        fetchContestData();
-    }, [params.id]);
+        fetchUserData();
+    }, [params.username]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setContest(prevState => {
+        setUser(prevState => {
             if (prevState[name] !== value) {
                 setHasChanged(true);
             }
@@ -52,17 +54,14 @@ const ContestEdit = ({ params }) => {
         e.preventDefault();
         setError('');
 
-        const method = params.id ? 'PUT' : 'POST';
-        const url = params.id ? `${process.env.NEXT_PUBLIC_API_PATH}contest/${params.id}` : `${process.env.NEXT_PUBLIC_API_PATH}contest`;
-
         try {
-            const response = await fetch(url, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}user/${user.username}`, {
                 credentials: 'include',
-                method: method,
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(contest),
+                body: JSON.stringify(user),
             });
 
             if (!response.ok) {
@@ -70,7 +69,7 @@ const ContestEdit = ({ params }) => {
                 throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
             }
 
-            router.push('/contest');
+            router.push('/user');
         } catch (error) {
             setError(error.message || 'Error desconocido');
         }
@@ -92,21 +91,47 @@ const ContestEdit = ({ params }) => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    name="name"
-                                    label="Nombre"
-                                    placeholder="Ingrese nombre"
-                                    value={contest.name}
+                                    name="username"
+                                    label="Nombre de Usuario"
+                                    placeholder="Ingrese el nombre de usuario"
+                                    value={user.username}
                                     onChange={handleChange}
                                     variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
+                                    disabled
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    name="date"
-                                    label="Fecha"
-                                    type="date"
-                                    value={contest.date}
+                                    name="email"
+                                    label="Email"
+                                    placeholder="Ingrese el correo electrónico"
+                                    value={user.email}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="name"
+                                    label="Nombre Completo"
+                                    placeholder="Ingrese el nombre completo"
+                                    value={user.name}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="password"
+                                    label="Contraseña"
+                                    type="password"
+                                    placeholder="Ingrese la nueva contraseña"
                                     onChange={handleChange}
                                     variant="outlined"
                                 />
@@ -126,4 +151,4 @@ const ContestEdit = ({ params }) => {
     );
 };
 
-export default ContestEdit;
+export default UserEdit;

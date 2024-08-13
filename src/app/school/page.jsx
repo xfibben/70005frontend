@@ -12,7 +12,7 @@ export default function Student() {
     const [schools, setSchools] = useState([]);
     const [filteredSchools, setFilteredSchools] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [schoolsPerPage] = useState(5);
+    const [schoolsPerPage] = useState(50);
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
@@ -40,7 +40,7 @@ export default function Student() {
                 setSchools(data);
                 setFilteredSchools(data);
             } catch (error) {
-                console.error('Ocurrio un error:', error);
+                console.error('Ocurrió un error:', error);
                 router.push('/login');
             }
         };
@@ -60,10 +60,10 @@ export default function Student() {
 
     const filterSchools = (term, type) => {
         let filtered = schools;
-        
+
         if (term) {
             const searchTermLower = term.toLowerCase();
-            filtered = filtered.filter(school => 
+            filtered = filtered.filter(school =>
                 (school.name && school.name.toLowerCase().includes(searchTermLower)) ||
                 (school.addres && school.addres.toLowerCase().includes(searchTermLower)) ||
                 (school.email && school.email.toLowerCase().includes(searchTermLower)) ||
@@ -104,6 +104,28 @@ export default function Student() {
         return sortableItems;
     }, [filteredSchools, sortConfig]);
 
+    const handleDelete = async (schoolId) => {
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta escuela?");
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school/${schoolId}`, {
+                credentials: 'include',
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar la escuela');
+            }
+
+            // Elimina la escuela de la lista en el frontend
+            setSchools(schools.filter(school => school.id !== schoolId));
+            setFilteredSchools(filteredSchools.filter(school => school.id !== schoolId));
+        } catch (error) {
+            console.error('Ocurrió un error al eliminar la escuela:', error);
+        }
+    };
+
     // Get current schools
     const indexOfLastSchool = currentPage * schoolsPerPage;
     const indexOfFirstSchool = indexOfLastSchool - schoolsPerPage;
@@ -122,21 +144,21 @@ export default function Student() {
 
     return (
         <div className="grid">
-            <Header/>
+            <Header />
             <div>
                 <Sidebar />
                 <div className="flex-grow p-6 ml-64">
                     <div className="flex justify-between">
                         <h2>Escuelas</h2>
-                        <button Link className="bg-green-500 p-2 rounded" >
+                        <button className="bg-green-500 p-2 rounded">
                             <Link href={`/school/create`}>Crear nueva Escuela</Link>
                         </button>
                     </div>
                     <SearchBar onSearch={handleSearch} />
                     <select onChange={(e) => handleTypeFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los tipos</option>
-                        <option value="Publica">Público</option>
-                        <option value="Privada">Privado</option>
+                        <option value="PUBLICA">Pública</option>
+                        <option value="PRIVADA">Privada</option>
                     </select>
                     <div className="bg-white shadow-md rounded p-6 mt-4">
                         <table className="min-w-full bg-white">
@@ -168,8 +190,14 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{school.email || 'N/A'}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{school.phone || 'N/A'}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{school.type || 'N/A'}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/school/${school.id}`}>Editar</Link>
+                                        <td className="py-2 px-4 border-b border-gray-200 flex space-x-2">
+                                            <Link href={`/school/${school.id}`} className="text-blue-600 hover:underline">Editar</Link>
+                                            <button
+                                                onClick={() => handleDelete(school.id)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Eliminar
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -177,9 +205,9 @@ export default function Student() {
                         </table>
                     </div>
                     <div className="mt-4 flex items-center justify-center">
-                        <button 
-                            onClick={() => paginate(currentPage - 1)} 
-                            disabled={currentPage === 1} 
+                        <button
+                            onClick={() => paginate(currentPage - 1)}
+                            disabled={currentPage === 1}
                             className="mr-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
                         >
                             Anterior
@@ -193,15 +221,16 @@ export default function Student() {
                                 {number}
                             </button>
                         ))}
-                        <button 
-                            onClick={() => paginate(currentPage + 1)} 
-                            disabled={indexOfLastSchool >= sortedSchools.length} 
+                        <button
+                            onClick={() => paginate(currentPage + 1)}
+                            disabled={indexOfLastSchool >= sortedSchools.length}
                             className="ml-2 px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
                         >
-                            Next
+                            Siguiente
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-    );};
+    );
+}

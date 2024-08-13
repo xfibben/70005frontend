@@ -3,25 +3,21 @@ import React, { useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
-import { Grid, TextField, Button, MenuItem, Select, InputLabel, FormControl, Alert } from '@mui/material';
+import { Grid, TextField, Button, Alert } from '@mui/material';
 
-const SchoolCreate = () => {
-    const [school, setSchool] = useState({
-        "name": "",
-        "address": "",
+const UserCreate = () => {
+    const [user, setUser] = useState({
+        "username": "",
         "email": "",
-        "phone": "",
-        "type": "PRIVADA",
+        "name": "",
+        "password": ""
     });
-
-    const [error, setError] = useState(''); // Estado para manejar errores
-
+    const [error, setError] = useState('');
     const router = useRouter();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-
-        setSchool(prevState => ({
+        setUser(prevState => ({
             ...prevState,
             [name]: value
         }));
@@ -29,16 +25,16 @@ const SchoolCreate = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Resetear error antes de enviar
+        setError('');
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}school`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}users`, {
                 credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(school),
+                body: JSON.stringify(user),
             });
 
             if (!response.ok) {
@@ -46,18 +42,11 @@ const SchoolCreate = () => {
                 throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
             }
 
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                router.push('/school');
-                return data;
-            } else {
-                throw new Error("Received non-JSON response from server");
-            }
+            router.push('/user');
         } catch (error) {
-            setError(error.message); // Almacenar el mensaje de error
+            setError(error.message || 'Error desconocido');
         }
-    }
+    };
 
     return (
         <div className="grid">
@@ -75,60 +64,50 @@ const SchoolCreate = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    name="name"
-                                    label="Nombre"
-                                    placeholder="Ingrese nombre"
+                                    name="username"
+                                    label="Nombre de Usuario"
+                                    placeholder="Ingrese el nombre de usuario"
                                     onChange={handleChange}
                                     variant="outlined"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <TextField
-                                    fullWidth
-                                    name="address"
-                                    label="Dirección"
-                                    placeholder="Ingrese dirección"
-                                    onChange={handleChange}
-                                    variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
                                     name="email"
-                                    label="Correo"
-                                    placeholder="Ingrese correo"
+                                    label="Email"
+                                    placeholder="Ingrese el correo electrónico"
                                     onChange={handleChange}
                                     variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    name="phone"
-                                    label="Teléfono"
-                                    placeholder="Ingrese teléfono"
+                                    name="name"
+                                    label="Nombre Completo"
+                                    placeholder="Ingrese el nombre completo"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                    inputProps={{ style: { textTransform: 'uppercase' } }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="password"
+                                    label="Contraseña"
+                                    type="password"
+                                    placeholder="Ingrese la contraseña"
                                     onChange={handleChange}
                                     variant="outlined"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
-                                <FormControl fullWidth variant="outlined">
-                                    <InputLabel>Tipo de Institución</InputLabel>
-                                    <Select
-                                        name="type"
-                                        onChange={handleChange}
-                                        value={school.type}
-                                        label="Tipo de Institución"
-                                    >
-                                        <MenuItem value="PRIVADA">Privada</MenuItem>
-                                        <MenuItem value="PUBLICA">Pública</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
                             <Grid item xs={12}>
                                 <Button variant="contained" color="primary" type="submit">
-                                    Enviar
+                                    Crear Usuario
                                 </Button>
                             </Grid>
                         </Grid>
@@ -139,4 +118,4 @@ const SchoolCreate = () => {
     );
 };
 
-export default SchoolCreate;
+export default UserCreate;

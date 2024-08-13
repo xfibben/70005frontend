@@ -64,7 +64,6 @@ export default function Student() {
     };
 
     const handleGradeFilter = (grade) => {
-        console.log(grade);
         setGradeFilter(grade);
         filterStudents(searchTerm, grade);
     };
@@ -86,7 +85,7 @@ export default function Student() {
         }
 
         if (grade) {
-            filtered = filtered.filter(student => student.grade.level === grade);
+            filtered = filtered.filter(student => `${student.grade.level}-${student.grade.grade}` === grade);
         }
 
         setFilteredStudents(filtered);
@@ -117,6 +116,28 @@ export default function Student() {
         return sortableItems;
     }, [filteredStudents, sortConfig]);
 
+    const handleDelete = async (studentId) => {
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este estudiante?");
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}student/${studentId}`, {
+                credentials: 'include',
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el estudiante');
+            }
+
+            // Elimina el estudiante de la lista en el frontend
+            setStudents(students.filter(student => student.id !== studentId));
+            setFilteredStudents(filteredStudents.filter(student => student.id !== studentId));
+        } catch (error) {
+            console.error('Ocurrió un error al eliminar el estudiante:', error);
+        }
+    };
+
     // Get current students
     const indexOfLastStudent = currentPage * studentsPerPage;
     const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -141,7 +162,7 @@ export default function Student() {
                 <div className="ml-64 flex-grow p-6">
                     <div className="flex justify-between">
                         <h2>Alumnos</h2>
-                        <button Link className="bg-green-500 p-2 rounded" >
+                        <button Link className="bg-green-500 p-2 rounded">
                             <Link href={`/student/create`}>Crear nuevo Estudiante</Link>
                         </button>
                     </div>
@@ -149,9 +170,12 @@ export default function Student() {
                     <select onChange={(e) => handleGradeFilter(e.target.value)} className="mb-4">
                         <option value="">Todos los grados</option>
                         {grades.map(grade => (
-                                <option key={grade.id} value={grade.level}>{grade.level}</option>
-                            ))}
+                            <option key={grade.id} value={`${grade.level}-${grade.grade}`}>
+                                {grade.level}-{grade.grade}
+                            </option>
+                        ))}
                     </select>
+
                     <div className="bg-white shadow-md rounded p-6 mt-4">
                         <table className="min-w-full bg-white">
                             <thead>
@@ -174,7 +198,7 @@ export default function Student() {
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
                                         Grado {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
-                                    <th className="py-2 px-4 border-b border-gray-200">Actions</th>
+                                    <th className="py-2 px-4 border-b border-gray-200">Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -186,8 +210,14 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{student.dni}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.grade.level}-{student.grade.grade}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/student/${student.id}`}>Editar</Link>
+                                        <td className="py-2 px-4 border-b border-gray-200 flex space-x-2">
+                                            <Link href={`/student/${student.id}`} className="text-blue-600 hover:underline">Editar</Link>
+                                            <button
+                                                onClick={() => handleDelete(student.id)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Eliminar
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
