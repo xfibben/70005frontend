@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 
 const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
     const [student, setStudent] = useState({
-        "name": "",
         "lastName": "",
+        "secondName": "",
+        "name": "",
         "email": "",
         "dni": "",
         "schoolId": 0,
@@ -87,25 +88,111 @@ const StudentEdit = ({ params }) => { // Asume que recibes studentId como prop
             <div className='flex'>
                 <Sidebar />
                 <div className="flex ml-64">
-                    <form className="" onSubmit={handleSubmit}>
-                        <input name="name"  value={student.name} placeholder="Ingrese su nombre" onChange={handleChange}></input>
-                        <input name="lastName" value={student.lastName}placeholder="Ingrese su apellido" onChange={handleChange}></input>
-                        <input name="email" value={student.email} placeholder="Ingrese su email" onChange={handleChange}></input>
-                        <input name="dni" value={student.dni} placeholder="Ingrese su DNI" onChange={handleChange}></input>
-                        <select name="schoolId" onChange={handleChange} value={student.schoolId}>
-                            <option>Seleccione una escuela</option>
-                            {schools.map(school => (
-                                <option key={school.id} value={school.id}>{school.name}</option>
-                            ))}
-                        </select>
-                        <select name="gradeId" onChange={handleChange} value={student.gradeId}>
-                            <option>Seleccione un grado</option>
-                            {grades.map(grade => (
-                                <option key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</option>
-                            ))}
-                        </select>
-                        {hasChanged && <button type="submit">Guardar Cambios</button>}
-
+                    <form className="form-container" onSubmit={handleSubmit}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="name"
+                                    label="Nombre"
+                                    placeholder="Ingrese su nombre"
+                                    value={student.name}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="secondName"
+                                    label="Segundo Nombre"
+                                    placeholder="Ingrese su segundo nombre"
+                                    value={student.secondName}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="lastName"
+                                    label="Apellido"
+                                    placeholder="Ingrese su apellido"
+                                    value={student.lastName}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="email"
+                                    label="Email"
+                                    placeholder="Ingrese su email"
+                                    value={student.email}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="dni"
+                                    label="DNI"
+                                    placeholder="Ingrese su DNI"
+                                    value={student.dni}
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel>Escuela</InputLabel>
+                                    <Select
+                                        name="schoolId"
+                                        value={student.schoolId}
+                                        onChange={handleChange}
+                                        label="Escuela"
+                                    >
+                                        <MenuItem value="">
+                                            <em>Seleccione una escuela</em>
+                                        </MenuItem>
+                                        {schools.map(school => (
+                                            <MenuItem key={school.id} value={school.id}>
+                                                {school.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel>Grado</InputLabel>
+                                    <Select
+                                        name="gradeId"
+                                        value={student.gradeId}
+                                        onChange={handleChange}
+                                        label="Grado"
+                                    >
+                                        <MenuItem value="">
+                                            <em>Seleccione un grado</em>
+                                        </MenuItem>
+                                        {grades.map(grade => (
+                                            <MenuItem key={grade.id} value={grade.id}>
+                                                {grade.grade}-{grade.level}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            {hasChanged && (
+                                <Grid item xs={12}>
+                                    <Button variant="contained" color="primary" type="submit">
+                                        Guardar Cambios
+                                    </Button>
+                                </Grid>
+                            )}
+                        </Grid>
                     </form>
                 </div>
             </div>

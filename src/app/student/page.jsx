@@ -77,9 +77,11 @@ export default function Student() {
             filtered = filtered.filter(student =>
                 (student.name && student.name.toLowerCase().includes(searchTermLower)) ||
                 (student.lastName && student.lastName.toLowerCase().includes(searchTermLower)) ||
+                (student.secondName && student.secondName.toLowerCase().includes(searchTermLower)) ||
                 (student.dni && student.dni.toString().toLowerCase().includes(searchTermLower)) ||
                 (student.school.name && student.school.name.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower))
+                (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower)) ||
+                (student.grade.grade && student.grade.grade.toString().toLowerCase().includes(searchTermLower))
             );
         }
 
@@ -155,19 +157,22 @@ export default function Student() {
                             <thead>
                                 <tr>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('name')}>
-                                        Name {sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Apellido Paterno{sortConfig.key === 'name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('lastName')}>
-                                        Last Name {sortConfig.key === 'lastName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Apellido Materno {sortConfig.key === 'lastName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('dni')}>
-                                        DNI {sortConfig.key === 'dni' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Nombre {sortConfig.key === 'dni' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('school.name')}>
-                                        School {sortConfig.key === 'school.name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        DNI {sortConfig.key === 'school.name' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
-                                        Grade {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                        Procedencia {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    </th>
+                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
+                                        Grado {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
                                     <th className="py-2 px-4 border-b border-gray-200">Actions</th>
                                 </tr>
@@ -175,11 +180,12 @@ export default function Student() {
                             <tbody>
                                 {currentStudents.map((student) => (
                                     <tr key={student.id}>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.lastName}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{student.secondName}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{student.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.dni}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">{student.grade.level}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{student.grade.level}-{student.grade.grade}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">
                                             <Link href={`/student/${student.id}`}>Editar</Link>
                                         </td>

@@ -3,11 +3,14 @@ import React, { useEffect, useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
+import { Grid, TextField, Button, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+
 
 const StudentCreate = () => {
     const [student, setStudent] = useState({
-        "name": "",
         "lastName": "",
+        "secondName": "",
+        "name": "",
         "email": "",
         "dni": "",
         "schoolId": 0,
@@ -82,24 +85,102 @@ const StudentCreate = () => {
             <div className='flex'>
                 <Sidebar />
                 <div className="ml-64 flex">
-                    <form classNam="grid">
-                        <input name="name"  placeholder="Ingrese su nombre" onChange={handleChange}></input>
-                        <input name="lastName" placeholder="Ingrese su apellido" onChange={handleChange}></input>
-                        <input name="email" placeholder="Ingrese su email" onChange={handleChange}></input>
-                        <input name="dni" placeholder="Ingrese su DNI" onChange={handleChange}></input>
-                        <select name="schoolId" onChange={handleChange}>
-                            <option>Seleccione una escuela</option>
-                            {schools.map(school => (
-                                <option key={school.id} value={school.id}>{school.name}</option>
-                            ))}
-                        </select>
-                        <select name="gradeId" onChange={handleChange}>
-                            <option>Seleccione un grado</option>
-                            {grades.map(grade => (
-                                <option key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</option>
-                            ))}
-                        </select>
-                        <submit onClick={()=>{handleSubmit(student)}}>Enviar</submit>
+                    <form className="form-container" onSubmit={(e) => { e.preventDefault(); handleSubmit(student); }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="lastName"
+                                    label="Apellido Paterno"
+                                    placeholder="Ingrese Apellido Paterno"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="secondName"
+                                    label="Apellido Materno"
+                                    placeholder="Ingrese su apellido"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="name"
+                                    label="Nombre"
+                                    placeholder="Ingrese su nombre"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="email"
+                                    label="Email"
+                                    placeholder="Ingrese su email"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    name="dni"
+                                    label="DNI"
+                                    placeholder="Ingrese su DNI"
+                                    onChange={handleChange}
+                                    variant="outlined"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel>Escuela</InputLabel>
+                                    <Select
+                                        name="schoolId"
+                                        onChange={handleChange}
+                                        label="Escuela"
+                                    >
+                                        <MenuItem value="">
+                                            <em>Seleccione una escuela</em>
+                                        </MenuItem>
+                                        {schools.map(school => (
+                                            <MenuItem key={school.id} value={school.id}>
+                                                {school.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel>Grado</InputLabel>
+                                    <Select
+                                        name="gradeId"
+                                        onChange={handleChange}
+                                        label="Grado"
+                                    >
+                                        <MenuItem value="">
+                                            <em>Seleccione un grado</em>
+                                        </MenuItem>
+                                        {grades.map(grade => (
+                                            <MenuItem key={grade.id} value={grade.id}>
+                                                {grade.grade}-{grade.level}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button variant="contained" color="primary" type="submit">
+                                    Enviar
+                                </Button>
+                            </Grid>
+                        </Grid>
                     </form>
                 </div>
             </div>
