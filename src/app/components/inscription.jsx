@@ -28,7 +28,7 @@ const InscriptionModal = ({ open, handleClose, studentId, testId, onSave }) => {
             studentId,
             testId
         };
-    
+
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}inscription`, {
                 credentials: 'include',
@@ -38,17 +38,16 @@ const InscriptionModal = ({ open, handleClose, studentId, testId, onSave }) => {
                 },
                 body: JSON.stringify(inscription),
             });
-    
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || `Error al crear la Inscripción: ${response.status} ${response.statusText}`);
             }
-    
+
             onSave(); // Cierra el modal
-    
+
             // Recargar la página para reflejar los cambios
-            window.location.reload();
-    
+
         } catch (error) {
             setError(error.message); // Almacena el mensaje de error en el estado
         }
