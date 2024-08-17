@@ -76,6 +76,30 @@ const ContestEdit = ({ params }) => {
         }
     };
 
+    const handleExportExcel = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest/excel/${params.id}`, {
+                credentials: 'include',
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `ranking_${params.id}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            setError(error.message || 'Error al exportar el Excel');
+        }
+    };
+
     return (
         <div className="grid">
             <Header />
@@ -118,6 +142,15 @@ const ContestEdit = ({ params }) => {
                                     </Button>
                                 </Grid>
                             )}
+                            <Grid item xs={12}>
+                                <Button 
+                                    variant="contained" 
+                                    color="success" 
+                                    onClick={handleExportExcel}
+                                >
+                                    Exportar Excel por Ranking
+                                </Button>
+                            </Grid>
                         </Grid>
                     </form>
                 </div>

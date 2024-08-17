@@ -119,7 +119,7 @@ const TestCreate = () => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="Duración (HH:MM)"
+                                    label="Hora de Inicio (HH:MM)"
                                     name="time"
                                     placeholder="HH:MM"
                                     onChange={handleChange}
@@ -129,14 +129,14 @@ const TestCreate = () => {
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <FormControl fullWidth variant="outlined">
-                                    <InputLabel>Seleccione una prueba</InputLabel>
+                                    <InputLabel>Seleccione una Concurso</InputLabel>
                                     <Select
                                         name="contestId"
                                         onChange={handleChange}
                                         value={test.contestId}
-                                        label="Seleccione una prueba"
+                                        label="Seleccione una Concurso"
                                     >
-                                        <MenuItem value=""><em>Seleccione una prueba</em></MenuItem>
+                                        <MenuItem value=""><em>Seleccione una Concurso</em></MenuItem>
                                         {contests.map(contest => (
                                             <MenuItem key={contest.id} value={contest.id}>{contest.name}</MenuItem>
                                         ))}

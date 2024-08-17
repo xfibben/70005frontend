@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
-import Modal from 'react-modal';
 import { Button, TextField, Select, MenuItem, InputLabel, FormControl, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Paper } from '@mui/material';
 import Link from 'next/link';
+import AddResultModal from '@/app/components/qualification';
+import InscriptionModal from '@/app/components/inscription';
 
 const TestEdit = ({ params }) => {
     const [test, setTest] = useState({
@@ -27,54 +28,51 @@ const TestEdit = ({ params }) => {
     const [sortedResults, setSortedResults] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [resultsPerPage] = useState(30);
-    const [isSorted, setIsSorted] = useState(false); // Nuevo estado para controlar si se debe ordenar
     const [testResults, setTestResults] = useState([]);
     const [newResult, setNewResult] = useState({
         studentId: 0,
-        testId: parseInt(params.id), // Asignar automáticamente el TestId
+        testId: parseInt(params.id),
         score: 0,
-        startingTime: test.time || "", // Asignar automáticamente el startingTime
+        startingTime: test.time || "",
         endingTime: "",
-        time: "" // Este será el tiempo total que tomará la prueba
+        time: ""
     });
+    const [inscriptionModalOpen, setInscriptionModalOpen] = useState(false);
+    const [selectedStudentId, setSelectedStudentId] = useState(0);
+
+    const generatePageNumbers = () => {
+        const totalResults = sortedResults.length ? sortedResults.length : testResults.length;
+        const pageNumbers = [];
+        for (let i = 1; i <= Math.ceil(totalResults / resultsPerPage); i++) {
+            pageNumbers.push(i);
+        }
+        return pageNumbers;
+    };
+
+    const deleteResult = async (id) => {
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este resultado?");
+        if (!confirmed) {
+            return; // Si el usuario cancela, no hacer nada
+        }
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification/${id}`, {
+                credentials: 'include',
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                setTestResults(prevResults => prevResults.filter(result => result.id !== id));
+            } else {
+                console.error('Error al eliminar el resultado');
+            }
+        } catch (error) {
+            console.error('Error al conectar con el servidor:', error);
+        }
+    };
 
 
     const router = useRouter();
-
-    const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        const sortedItems = [...testResults].sort((a, b) => {
-            if (a[key] < b[key]) {
-                return direction === 'ascending' ? -1 : 1;
-            }
-            if (a[key] > b[key]) {
-                return direction === 'ascending' ? 1 : -1;
-            }
-            return 0;
-        });
-
-    setSortedResults(sortedItems);
-    setSortConfig({ key, direction });
-};
-
-    const sortedTestResults = React.useMemo(() => {
-        let sortableItems = [...testResults];
-        if (isSorted && sortConfig.key !== null) {
-            sortableItems.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
-            });
-        }
-        return sortableItems;
-    }, [testResults, sortConfig, isSorted]);
 
     useEffect(() => {
         const fetchContestsAndGrades = async () => {
@@ -109,18 +107,11 @@ const TestEdit = ({ params }) => {
             setTestResults(data);
         };
 
-        if (sortConfig.key) {
-            setTimeout(() => {
-                setSortConfig({ key: null, direction: 'ascending' });
-                setSortedResults([]); // Resetea el ordenamiento para evitar que continúe aplicándose
-            }, 0); // Esto asegura que el ordenamiento solo se aplique una vez
-        }
-
         fetchContestsAndGrades();
         fetchTestData();
         fetchStudents();
         fetchTestResults();
-    }, [params.id,sortConfig]);
+    }, [params.id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -160,6 +151,9 @@ const TestEdit = ({ params }) => {
     const openModal = () => setModalIsOpen(true);
     const closeModal = () => setModalIsOpen(false);
 
+    const openInscriptionModal = () => setInscriptionModalOpen(true);
+    const closeInscriptionModal = () => setInscriptionModalOpen(false);
+
     const handleStudentSearch = (e) => {
         const searchTerm = e.target.value.toLowerCase();
         setStudentSearch(searchTerm);
@@ -171,38 +165,47 @@ const TestEdit = ({ params }) => {
     };
 
     const handleNewResultChange = (e) => {
-        const { name, value } = e.target;
-        setNewResult(prevState => ({
-            ...prevState,
-            [name]: value
-        }));
-    };
-
-    const addResult = async () => {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
-            credentials: 'include',
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(newResult),
-        });
-
-        if (response.ok) {
+            const { name, value } = e.target;
+            setNewResult(prevState => ({
+                ...prevState,
+                [name]: value
+            }));
+        };
+    
+        const addResult = async () => {
+        try {
+            // Crear la calificación (Qualification)
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
+                credentials: 'include',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newResult),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Error al agregar el resultado del test');
+            }
+    
             const result = await response.json();
             setTestResults([...testResults, result]);
             closeModal();
-        } else {
-            console.error('Error al agregar el resultado del test');
+    
+            // Verificar si el alumno tiene una inscripción (Inscription)
+            const existingInscriptionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}inscription/check?studentId=${newResult.studentId}&testId=${newResult.testId}`, { credentials: 'include' });
+            const existingInscriptionData = await existingInscriptionResponse.json();
+    
+            if (!existingInscriptionData.ticketExists) {
+                setSelectedStudentId(newResult.studentId);
+                openInscriptionModal(); // Abre el modal de inscripción si el estudiante no está inscrito
+            }
+    
+        } catch (error) {
+            console.error(error.message);
         }
     };
 
-    const handleResultChange = (e, index) => {
-        const { name, value } = e.target;
-        const updatedResults = [...testResults];
-        updatedResults[index][name] = value;
-        setTestResults(updatedResults);
-    };
 
     const saveResult = async (index) => {
         const result = { ...testResults[index] };
@@ -226,45 +229,11 @@ const TestEdit = ({ params }) => {
 
         if (!response.ok) {
             console.error('Error al guardar el resultado');
-        }else{
-            alert("Dato guardado con exito");
-            router.push(`/test/${params.id}`)
-        }
-    };
-
-    const indexOfLastResult = currentPage * resultsPerPage;
-    const indexOfFirstResult = indexOfLastResult - resultsPerPage;
-    const currentResults = sortedResults.length ? sortedResults.slice(indexOfFirstResult, indexOfLastResult) : testResults.slice(indexOfFirstResult, indexOfLastResult);
-
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const generatePageNumbers = () => {
-        const pageNumbers = [];
-        for (let i = 1; i <= Math.ceil(sortedTestResults.length / resultsPerPage); i++) {
-            pageNumbers.push(i);
-        }
-        return pageNumbers;
-    };
-
-    const deleteResult = async (id) => {
-        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este resultado?");
-        if (!confirmed) {
-            return; // Si el usuario cancela, no hacer nada
-        }
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification/${id}`, {
-            credentials: 'include',
-            method: 'DELETE',
-        });
-
-        if (response.ok) {
-            setTestResults(testResults.filter(result => result.id !== id));
         } else {
-            console.error('Error al eliminar el resultado');
+            alert("Dato guardado con éxito");
+            router.push(`/test/${params.id}`);
         }
     };
-
 
     return (
         <div className="grid">
@@ -341,70 +310,25 @@ const TestEdit = ({ params }) => {
                         Inscribir alumno
                     </Button>
 
-                    <Modal
-                        isOpen={modalIsOpen}
-                        onRequestClose={closeModal}
-                        contentLabel="Agregar Resultado"
-                        style={{
-                            overlay: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                            },
-                            content: {
-                                top: '50%',
-                                left: '50%',
-                                right: 'auto',
-                                bottom: 'auto',
-                                marginRight: '-50%',
-                                transform: 'translate(-50%, -50%)',
-                                backgroundColor: '#fff',
-                                borderRadius: '8px',
-                                padding: '20px',
-                                maxWidth: '500px',
-                                width: '100%',
-                            }
-                        }}
-                    >
-                        <h2 className="text-xl font-bold mb-4">Agregar Resultado</h2>
-                        <TextField
-                            type="text"
-                            placeholder="Buscar estudiante"
-                            value={studentSearch}
-                            onChange={handleStudentSearch}
-                            className="border p-2 w-full mb-4"
-                        />
-                        <FormControl variant="outlined" className="w-full">
-                            <InputLabel>Seleccione un estudiante</InputLabel>
-                            <Select
-                                name="studentId"
-                                value={newResult.studentId}
-                                onChange={handleNewResultChange}
-                                label="Seleccione un estudiante"
-                            >
-                                <MenuItem value="">
-                                    <em>Seleccione un estudiante</em>
-                                </MenuItem>
-                                {filteredStudents.map(student => (
-                                    <MenuItem key={student.id} value={student.id}>
-                                        {student.lastName} {student.secondName} {student.name} {student.dni}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        <TextField
-                            name="endingTime"
-                            label="Hora de finalización (HH:MM)"
-                            value={newResult.endingTime}
-                            onChange={handleNewResultChange}
-                            className="border p-2 w-full"
-                            variant="outlined"
-                        />
-                        <Button onClick={addResult} variant="contained" color="primary" className="mt-4">
-                            Aceptar
-                        </Button>
-                        <Button onClick={closeModal} variant="contained" color="secondary" className="mt-4">
-                            Cancelar
-                        </Button>
-                    </Modal>
+                    <AddResultModal
+                        open={modalIsOpen}
+                        handleClose={closeModal}
+                        students={students}
+                        handleStudentSearch={handleStudentSearch}
+                        studentSearch={studentSearch}
+                        filteredStudents={filteredStudents}
+                        newResult={newResult}
+                        handleNewResultChange={handleNewResultChange}
+                        addResult={addResult}
+                    />
+
+                    <InscriptionModal
+                        open={inscriptionModalOpen}
+                        handleClose={closeInscriptionModal}
+                        studentId={selectedStudentId}
+                        testId={test.id}
+                        onSave={closeInscriptionModal}
+                    />
 
                     <TableContainer component={Paper} className="mt-8">
                         <Table>
@@ -424,47 +348,47 @@ const TestEdit = ({ params }) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {currentResults.map((result, index) => (
-                                    <TableRow key={result.id}>
-                                        <TableCell>{result.student?.lastName || 'N/A'}</TableCell>
-                                        <TableCell>{result.student?.name || 'N/A'}</TableCell>
-                                        <TableCell>{result.test?.name || 'N/A'}</TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                type="number"
-                                                name="score"
-                                                value={result.score}
-                                                onChange={(e) => handleResultChange(e, index)}
-                                                className="border p-2 w-full"
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                name="startingTime"
-                                                value={result.startingTime}
-                                                onChange={(e) => handleResultChange(e, index)}
-                                                className="border p-2 w-full"
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField
-                                                name="endingTime"
-                                                value={result.endingTime}
-                                                onChange={(e) => handleResultChange(e, index)}
-                                                className="border p-2 w-full"
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button onClick={() => saveResult(index)} variant="contained" color="primary">
-                                                Guardar
-                                            </Button>
-                                            <Button onClick={() => deleteResult(result.id)} variant="contained" color="secondary" className="ml-2">
-                                                Eliminar
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
+                            {(sortedResults.length ? sortedResults : testResults).map((result, index) => (
+                                <TableRow key={result.id}>
+                                    <TableCell>{result.student?.lastName || 'N/A'}</TableCell>
+                                    <TableCell>{result.student?.name || 'N/A'}</TableCell>
+                                    <TableCell>{result.test?.name || 'N/A'}</TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            type="number"
+                                            name="score"
+                                            value={result.score}
+                                            onChange={(e) => handleResultChange(e, index)}
+                                            className="border p-2 w-full"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            name="startingTime"
+                                            value={result.startingTime}
+                                            onChange={(e) => handleResultChange(e, index)}
+                                            className="border p-2 w-full"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            name="endingTime"
+                                            value={result.endingTime}
+                                            onChange={(e) => handleResultChange(e, index)}
+                                            className="border p-2 w-full"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button onClick={() => saveResult(index)} variant="contained" color="primary">
+                                            Guardar
+                                        </Button>
+                                        <Button onClick={() => deleteResult(result.id)} variant="contained" color="secondary" className="ml-2">
+                                            Eliminar
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
 
                         </Table>
                     </TableContainer>

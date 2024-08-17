@@ -4,6 +4,8 @@ import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
 import { Grid, TextField, Button, MenuItem, Select, InputLabel, FormControl, Alert } from '@mui/material';
+import InscriptionModal from '@/app/components/inscription'; // Asegúrate de que la ruta sea correcta
+import CustomSelect from '@/app/components/customschools';
 
 const StudentCreate = () => {
     const [student, setStudent] = useState({
@@ -23,7 +25,12 @@ const StudentCreate = () => {
     const [schoolSearch, setSchoolSearch] = useState('');
     const [gradeSearch, setGradeSearch] = useState('');
     const [error, setError] = useState(''); // Estado para manejar errores
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [createdStudent, setCreatedStudent] = useState(null); // Nuevo estado para almacenar el estudiante creado
     const router = useRouter();
+
+    const handleOpenModal = () => setIsModalOpen(true);
+    const handleCloseModal = () => setIsModalOpen(false);
 
     useEffect(() => {
         const fetchSchools = async () => {
@@ -95,12 +102,13 @@ const StudentCreate = () => {
                 throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
             }
 
-            const createdStudent = await response.json(); // Obtén el estudiante creado
+            const createdStudentData = await response.json(); // Obtén el estudiante creado
+            setCreatedStudent(createdStudentData); // Guarda el estudiante creado en el estado
 
             // Si se seleccionó un Test, crea una Qualification
             if (selectedTestId) {
                 const qualification = {
-                    studentId: createdStudent.id,
+                    studentId: createdStudentData.id,
                     testId: selectedTestId,
                     startingTime: tests.find(test => test.id === selectedTestId)?.time || '',
                     endingTime: "", // Este puede ser llenado posteriormente
@@ -121,18 +129,29 @@ const StudentCreate = () => {
                 }
             }
 
-            router.push('/student');
+            if (selectedTestId) {
+                handleOpenModal(); // Abre el modal si se seleccionó un concurso
+            } else {
+                router.push('/student');
+            }
+
         } catch (error) {
             setError(error.message); // Almacena el mensaje de error
         }
     };
 
     const handleSchoolSearchChange = (e) => {
-        setSchoolSearch(e.target.value.toUpperCase());
+        setSchoolSearch(e.target.value.toLowerCase());
     };
+
 
     const handleGradeSearchChange = (e) => {
         setGradeSearch(e.target.value.toUpperCase());
+    };
+
+    const handleSaveInscription = () => {
+        handleCloseModal();
+        router.push('/student'); // Redirige después de guardar la inscripción
     };
 
     return (
@@ -204,25 +223,14 @@ const StudentCreate = () => {
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                                <FormControl fullWidth variant="outlined">
-                                    <InputLabel>Escuela</InputLabel>
-                                    <Select
-                                        name="schoolId"
-                                        onChange={handleChange}
-                                        label="Escuela"
-                                        value={student.schoolId}
-                                        onInput={handleSchoolSearchChange}
-                                    >
-                                        <MenuItem value="">
-                                            <em>Seleccione una escuela</em>
-                                        </MenuItem>
-                                        {schools.filter(school => school.name.includes(schoolSearch)).map(school => (
-                                            <MenuItem key={school.id} value={school.id}>
-                                                {school.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                            <CustomSelect
+                                options={schools}
+                                label="Escuela"
+                                name="schoolId"
+                                value={student.schoolId}
+                                onChange={handleChange}
+                                placeholder="Seleccione una escuela"
+                            />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <FormControl fullWidth variant="outlined">
@@ -257,20 +265,21 @@ const StudentCreate = () => {
                                         <MenuItem value="INDEPENDIENTE">INDEPENDIENTE</MenuItem>
                                         <MenuItem value="DELEGACION">DELEGACION</MenuItem>
                                         <MenuItem value="INTERNO">INTERNO</MenuItem>
+                                        <MenuItem value="EXTERNO">EXTERNO</MenuItem>
                                     </Select>
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <FormControl fullWidth variant="outlined">
-                                    <InputLabel>Seleccione un Test</InputLabel>
+                                    <InputLabel>Seleccione una Prueba</InputLabel>
                                     <Select
                                         name="testId"
                                         onChange={(e) => setSelectedTestId(e.target.value)}
-                                        label="Seleccione un Test"
+                                        label="Seleccione una Prueba"
                                         value={selectedTestId}
                                     >
                                         <MenuItem value="">
-                                            <em>Seleccione un Test</em>
+                                            <em>Seleccione una Prueba</em>
                                         </MenuItem>
                                         {tests.map(test => (
                                             <MenuItem key={test.id} value={test.id}>
@@ -287,6 +296,13 @@ const StudentCreate = () => {
                             </Grid>
                         </Grid>
                     </form>
+                    <InscriptionModal
+                        open={isModalOpen}
+                        handleClose={handleCloseModal}
+                        studentId={createdStudent?.id} // Asegúrate de que createdStudent esté definido
+                        testId={selectedTestId} // Pasa el ID del concurso seleccionado
+                        onSave={handleSaveInscription}
+                    />
                 </div>
             </div>
         </div>
