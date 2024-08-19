@@ -35,7 +35,7 @@ const Header = () => {
     return (
         <div className="flex justify-between items-center p-4 bg-gray-100">
             {/* Imagen a la izquierda */}
-            <img src="/path-to-your-image.png" alt="Logo" className="h-10"  onClick={()=>{router.push('/dashboard')}}/>
+            <img src="/70005logo.jpg" alt="Logo" className="h-10"  onClick={()=>{router.push('/dashboard')}}/>
 
             {/* Botón de iniciar/cerrar sesión a la derecha */}
             {isLoggedIn ? (

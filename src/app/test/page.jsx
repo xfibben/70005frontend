@@ -112,6 +112,28 @@ export default function Student() {
         return sortableItems;
     }, [filteredTests, sortConfig]);
 
+    // Handle delete
+    const handleDelete = async (id) => {
+        if (confirm("¿Estás seguro de que quieres eliminar esta prueba?")) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}test/${id}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('No se pudo eliminar la prueba');
+                }
+
+                // Actualizar la lista de pruebas después de la eliminación
+                setTests(tests.filter(test => test.id !== id));
+                setFilteredTests(filteredTests.filter(test => test.id !== id));
+            } catch (error) {
+                console.error('An error occurred:', error);
+            }
+        }
+    };
+
     // Get current tests
     const indexOfLastTest = currentPage * testsPerPage;
     const indexOfFirstTest = indexOfLastTest - testsPerPage;
@@ -136,7 +158,7 @@ export default function Student() {
                 <div className="ml-64 flex-grow p-6">
                     <div className="flex justify-between">
                         <h2>Pruebas</h2>
-                        <button Link className="bg-green-500 p-2 rounded" >
+                        <button className="bg-green-500 p-2 rounded">
                             <Link href={`/test/create`}>Crear nueva Prueba</Link>
                         </button>
                     </div>
@@ -169,8 +191,9 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{test.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{test.date}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{contests.find(contest => contest.id === test.contestId)?.name}</td>
-                                        <td className="py-2 px-4 border-b border-gray-200">
-                                            <Link href={`/test/${test.id}`}>Editar</Link>
+                                        <td className="py-2 px-4 border-b border-gray-200 flex space-x-2">
+                                            <Link href={`/test/${test.id}`} className="text-blue-500">Editar</Link>
+                                            <button onClick={() => handleDelete(test.id)} className="text-red-500">Eliminar</button>
                                         </td>
                                     </tr>
                                 ))}

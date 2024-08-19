@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Header from "@/app/components/header";
 import Sidebar from "@/app/components/sidebar";
 import { useRouter } from 'next/navigation';
-import { Button, TextField, Select, MenuItem, InputLabel, FormControl, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Paper } from '@mui/material';
+import { Button,Grid,TextField, Select, MenuItem, InputLabel, FormControl, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Paper } from '@mui/material';
 import Link from 'next/link';
 import AddResultModal from '@/app/components/qualification';
 import InscriptionModal from '@/app/components/inscription';
@@ -172,7 +172,7 @@ const TestEdit = ({ params }) => {
             }));
         };
     
-        const addResult = async () => {
+    const addResult = async () => {
         try {
             // Crear la calificación (Qualification)
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
@@ -205,6 +205,44 @@ const TestEdit = ({ params }) => {
             console.error(error.message);
         }
     };
+
+    const handleExportExcel = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}test/excel/${params.id}`, {
+                credentials: 'include',
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `ranking_${params.id}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            setError(error.message || 'Error al exportar el Excel');
+        }
+    };
+
+    const handleResultChange = (e, index) => {
+        const { name, value } = e.target;
+    
+        setTestResults(prevResults => {
+            const updatedResults = [...prevResults];
+            updatedResults[index] = {
+                ...updatedResults[index],
+                [name]: value
+            };
+            return updatedResults;
+        });
+    };
+
 
 
     const saveResult = async (index) => {
@@ -252,7 +290,7 @@ const TestEdit = ({ params }) => {
                         />
                         <TextField
                             name="time"
-                            label="Duración (HH:MM)"
+                            label="Hora de inicio (HH:MM)"
                             value={test.time}
                             onChange={handleChange}
                             className="border p-2 w-full"
@@ -305,6 +343,15 @@ const TestEdit = ({ params }) => {
                             </Button>
                         )}
                     </form>
+                    <Grid item xs={12}>
+                                <Button 
+                                    variant="contained" 
+                                    color="success" 
+                                    onClick={handleExportExcel}
+                                >
+                                    Exportar Excel por Ranking
+                                </Button>
+                            </Grid>
 
                     <Button onClick={openModal} variant="contained" color="primary" className="mt-4">
                         Inscribir alumno

@@ -80,16 +80,23 @@ export default function Contest() {
 
     const handleDelete = async (id) => {
         setError('');
+        
+        const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este concurso?");
+        
+        if (!confirmed) {
+            return; // Si el usuario cancela, no se procede con la eliminación
+        }
+    
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest/${id}`, {
                 credentials: 'include',
                 method: 'DELETE',
             });
-
+    
             if (!response.ok) {
                 throw new Error('Error al eliminar el concurso');
             }
-
+    
             setContests(prev => prev.filter(contest => contest.id !== id));
             setFilteredContests(prev => prev.filter(contest => contest.id !== id));
         } catch (error) {
@@ -97,6 +104,7 @@ export default function Contest() {
             setError(error.message);
         }
     };
+
 
     const sortedContests = React.useMemo(() => {
         let sortableItems = [...filteredContests];
