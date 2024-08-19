@@ -100,6 +100,30 @@ const ContestEdit = ({ params }) => {
         }
     };
 
+    const handleExportPDF = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}contest/pdf/${params.id}`, {
+                credentials: 'include',
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status} ${response.statusText}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `ranking_${params.id}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (error) {
+            setError(error.message || 'Error al exportar el PDF');
+        }
+    };
+
     return (
         <div className="grid">
             <Header />
@@ -149,6 +173,15 @@ const ContestEdit = ({ params }) => {
                                     onClick={handleExportExcel}
                                 >
                                     Exportar Excel por Ranking
+                                </Button>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button 
+                                    variant="contained" 
+                                    color="secondary" 
+                                    onClick={handleExportPDF}
+                                >
+                                    Exportar PDF por Ranking
                                 </Button>
                             </Grid>
                         </Grid>
