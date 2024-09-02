@@ -80,7 +80,8 @@ export default function Student() {
                 (student.dni && student.dni.toString().toLowerCase().includes(searchTermLower)) ||
                 (student.school.name && student.school.name.toLowerCase().includes(searchTermLower)) ||
                 (student.grade.level && student.grade.level.toLowerCase().includes(searchTermLower)) ||
-                (student.grade.grade && student.grade.grade.toString().toLowerCase().includes(searchTermLower))
+                (student.grade.grade && student.grade.grade.toString().toLowerCase().includes(searchTermLower)) ||
+                (student.mode && student.mode.toLowerCase().includes(searchTermLower)) 
             );
         }
 
@@ -198,6 +199,9 @@ export default function Student() {
                                     <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
                                         Grado {sortConfig.key === 'grade.level' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
                                     </th>
+                                    <th className="py-2 px-4 border-b border-gray-200 cursor-pointer" onClick={() => requestSort('grade.level')}>
+                                        Modalidad {sortConfig.key === 'grade.mode' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    </th>
                                     <th className="py-2 px-4 border-b border-gray-200">Acción</th>
                                 </tr>
                             </thead>
@@ -210,6 +214,7 @@ export default function Student() {
                                         <td className="py-2 px-4 border-b border-gray-200">{student.dni}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.school.name}</td>
                                         <td className="py-2 px-4 border-b border-gray-200">{student.grade.level}-{student.grade.grade}</td>
+                                        <td className="py-2 px-4 border-b border-gray-200">{student.mode}</td>
                                         <td className="py-2 px-4 border-b border-gray-200 flex space-x-2">
                                             <Link href={`/student/${student.id}`} className="text-blue-600 hover:underline">Editar</Link>
                                             <button

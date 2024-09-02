@@ -194,9 +194,9 @@ const StudentEdit = ({ params }) => {
                                 />
 
                             <Grid item xs={12} sm={6}><FormControl fullWidth variant="outlined"><InputLabel>Grado</InputLabel><Select name="gradeId" value={student.gradeId} onChange={handleChange} label="Grado" onInput={handleGradeSearchChange}><MenuItem value=""><em>Seleccione un grado</em></MenuItem>{grades.filter(grade => `${grade.grade}-${grade.level}`.includes(gradeSearch)).map(grade => (<MenuItem key={grade.id} value={grade.id}>{grade.grade}-{grade.level}</MenuItem>))}</Select></FormControl></Grid>
-                            <Grid item xs={12} sm={6}><FormControl fullWidth variant="outlined"><InputLabel>Modalidad</InputLabel><Select name="mode" value={student.mode} onChange={handleChange} label="Modalidad"><MenuItem value="INDEPENDIENTE">INDEPENDIENTE</MenuItem><MenuItem value="DELEGACION">DELEGACION</MenuItem><MenuItem value="INTERNO">INTERNO</MenuItem></Select></FormControl></Grid>
+                            <Grid item xs={12} sm={6}><FormControl fullWidth variant="outlined"><InputLabel>Modalidad</InputLabel><Select name="mode" value={student.mode} onChange={handleChange} label="Modalidad"><MenuItem value="INDEPENDIENTE">INDEPENDIENTE</MenuItem><MenuItem value="DELEGACION">DELEGACION</MenuItem><MenuItem value="INTERNO">INTERNO</MenuItem><MenuItem value="EXTERNO">EXTERNO</MenuItem></Select></FormControl></Grid>
                             <Grid item xs={12} sm={6}><FormControl fullWidth variant="outlined"><InputLabel>Seleccione una Prueba (Opcional)</InputLabel><Select name="testId" value={selectedTestId || ""} onChange={handleTestChange} label="Seleccione una Prueba (Opcional)"><MenuItem value=""><em>Seleccione una Prueba (Opcional)</em></MenuItem>{tests.map(test => (<MenuItem key={test.id} value={test.id}>{test.name} - {test.date}</MenuItem>))}</Select></FormControl></Grid>
-                            {hasChanged && (<Grid item xs={12}><Button variant="contained" color="primary" type="submit">Guardar Cambios</Button></Grid>)}
+                            <Grid item xs={12}><Button variant="contained" color="primary" type="submit">Guardar Cambios</Button></Grid>
                         </Grid>
                     </form>
                 </div>
