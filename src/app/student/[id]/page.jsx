@@ -64,20 +64,25 @@ const StudentEdit = ({ params }) => {
 
     const handleTestChange = async (e) => {
         const newTestId = +e.target.value;
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}inscription/check?studentId=${student.id}&testId=${newTestId}`, { credentials: 'include' });
-        const data = await response.json();
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}inscription/check?studentId=${student.id}&testId=${newTestId}`, { credentials: 'include' });
+            const data = await response.json();
 
-        if (data.ticketExists) {
-            setTicketExists(true);
-            setSelectedTestId(null); // Desmarca la selección del test
-            setError('Este estudiante ya tiene un ticket asociado a esta prueba. No puede cambiar el test.');
-        } else {
-            setTicketExists(false);
-            setSelectedTestId(newTestId);
-            setIsModalOpen(true); // Abre el modal para crear el ticket
-            setHasChanged(true);
+            if (data.ticketExists) {
+                setTicketExists(true);
+                setSelectedTestId(null); // Desmarca la selección del test
+                setError('Este estudiante ya tiene un ticket asociado a esta prueba. No puede cambiar el test.');
+            } else {
+                setTicketExists(false);
+                setSelectedTestId(newTestId);
+                setIsModalOpen(true); // Abre el modal para crear el ticket
+                setHasChanged(true);
+            }
+        } catch (error) {
+            setError('Error al verificar el ticket: ' + error.message);
         }
     };
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -116,7 +121,7 @@ const StudentEdit = ({ params }) => {
         setError('');
         const method = 'PUT';
         const url = `${process.env.NEXT_PUBLIC_API_PATH}student/${params.id}`;
-
+    
         try {
             const response = await fetch(url, {
                 credentials: 'include',
@@ -126,12 +131,12 @@ const StudentEdit = ({ params }) => {
                 },
                 body: JSON.stringify(student),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
             }
-
+    
             // Si se seleccionó un Test y no hay ticket existente, crea una Qualification
             if (selectedTestId && !ticketExists) {
                 const qualification = {
@@ -140,7 +145,7 @@ const StudentEdit = ({ params }) => {
                     startingTime: tests.find(test => test.id === selectedTestId)?.time || '',
                     endingTime: "", // Este puede ser llenado posteriormente
                 };
-
+    
                 const qualificationResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
                     credentials: 'include',
                     method: 'POST',
@@ -149,13 +154,13 @@ const StudentEdit = ({ params }) => {
                     },
                     body: JSON.stringify(qualification),
                 });
-
+    
                 if (!qualificationResponse.ok) {
                     const errorData = await qualificationResponse.json();
                     throw new Error(errorData.message || `Error al crear la Qualification: ${qualificationResponse.status} ${qualificationResponse.statusText}`);
                 }
             }
-
+    
             router.push('/student');
         } catch (error) {
             setError(error.message || 'Error desconocido');

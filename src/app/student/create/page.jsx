@@ -79,6 +79,7 @@ const StudentCreate = () => {
                     newState = { ...newState, mode: "INTERNO" };
                 }
             }
+            console.log(newState);
 
             return newState;
         });
@@ -105,30 +106,6 @@ const StudentCreate = () => {
             const createdStudentData = await response.json(); // Obtén el estudiante creado
             setCreatedStudent(createdStudentData); // Guarda el estudiante creado en el estado
 
-            // Si se seleccionó un Test, crea una Qualification
-            if (selectedTestId) {
-                const qualification = {
-                    studentId: createdStudentData.id,
-                    testId: selectedTestId,
-                    startingTime: tests.find(test => test.id === selectedTestId)?.time || '',
-                    endingTime: "", // Este puede ser llenado posteriormente
-                };
-
-                const qualificationResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
-                    credentials: 'include',
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(qualification),
-                });
-
-                if (!qualificationResponse.ok) {
-                    const errorData = await qualificationResponse.json();
-                    throw new Error(errorData.message || `Error al crear la Qualification: ${qualificationResponse.status} ${qualificationResponse.statusText}`);
-                }
-            }
-
             if (selectedTestId) {
                 handleOpenModal(); // Abre el modal si se seleccionó un concurso
             } else {
@@ -140,19 +117,46 @@ const StudentCreate = () => {
         }
     };
 
-    const handleSchoolSearchChange = (e) => {
-        setSchoolSearch(e.target.value.toLowerCase());
-    };
+    
+    const handleSaveInscription = async (ticket) => {
+    try {
+        const qualification = {
+            studentId: createdStudent.id,
+            testId: selectedTestId,
+            startingTime: tests.find(test => test.id === selectedTestId)?.time || '',
+            endingTime: "", // Este puede ser llenado posteriormente
+            ticket: ticket, // Agrega el ticket ingresado en el modal
+        };
+
+        const qualificationResponse = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}qualification`, {
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(qualification),
+        });
+
+        if (!qualificationResponse.ok) {
+            const errorData = await qualificationResponse.json();
+            throw new Error(errorData.message || `Error al crear la Qualification: ${qualificationResponse.status} ${qualificationResponse.statusText}`);
+        }
+
+        handleCloseModal();
+        router.push('/student'); // Redirige después de guardar la inscripción
+
+    } catch (error) {
+        setError(error.message); // Almacena el mensaje de error
+    }
+};
+    
 
 
     const handleGradeSearchChange = (e) => {
         setGradeSearch(e.target.value.toUpperCase());
     };
 
-    const handleSaveInscription = () => {
-        handleCloseModal();
-        router.push('/student'); // Redirige después de guardar la inscripción
-    };
+
 
     return (
         <div className="grid">
