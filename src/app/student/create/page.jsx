@@ -29,6 +29,13 @@ const StudentCreate = () => {
     const [createdStudent, setCreatedStudent] = useState(null); // Nuevo estado para almacenar el estudiante creado
     const router = useRouter();
 
+    //excel
+    const [excelSchoolId, setExcelSchoolId] = useState('');
+    const [excelGradeId, setExcelGradeId] = useState('');
+    const [excelTestId, setExcelTestId] = useState('');
+    const [selectedExcelFile, setSelectedExcelFile] = useState(null); // State for the selected Excel file
+    const [isExcelUploadVisible, setIsExcelUploadVisible] = useState(false);
+
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => setIsModalOpen(false);
 
@@ -157,6 +164,47 @@ const StudentCreate = () => {
     };
 
 
+    //excel
+    // Function to handle file selection
+const handleExcelFileChange = (e) => {
+    setSelectedExcelFile(e.target.files[0]); // Save the selected Excel file
+};
+
+// Function to handle Excel upload visibility
+const handleExcelUploadVisibility = () => {
+    setIsExcelUploadVisible(!isExcelUploadVisible); // Toggle visibility
+};
+
+// Function to handle the Excel file upload
+const handleExcelUpload = async () => {
+    if (!selectedExcelFile || !excelSchoolId || !excelGradeId || !excelTestId) {
+        setError('Seleccione el archivo, escuela, grado, y prueba antes de subir.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedExcelFile);
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_PATH}student/upload?schoolId=${excelSchoolId}&gradeId=${excelGradeId}&testId=${excelTestId}`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`);
+        }
+
+        alert('Estudiantes subidos exitosamente desde Excel.');
+        setIsExcelUploadVisible(false); // Hide the section after upload
+
+    } catch (error) {
+        setError(error.message);
+    }
+};
+
 
     return (
         <div className="grid">
@@ -171,6 +219,8 @@ const StudentCreate = () => {
                                     <Alert severity="error" onClose={() => setError('')}>{error}</Alert>
                                 )}
                             </Grid>
+                            
+
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
@@ -298,6 +348,81 @@ const StudentCreate = () => {
                                     Enviar
                                 </Button>
                             </Grid>
+                            <Grid item xs={12}>
+                                <Button variant="contained" color="primary" onClick={handleExcelUploadVisibility}>
+                                    Importar desde Excel
+                                </Button>
+                            </Grid>
+
+                            {isExcelUploadVisible && (
+                                <>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControl fullWidth variant="outlined">
+                                            <InputLabel>Escuela</InputLabel>
+                                            <Select
+                                                value={excelSchoolId}
+                                                onChange={(e) => setExcelSchoolId(e.target.value)}
+                                                label="Escuela"
+                                            >
+                                                <MenuItem value="">
+                                                    <em>Seleccione una escuela</em>
+                                                </MenuItem>
+                                                {schools.map(school => (
+                                                    <MenuItem key={school.id} value={school.id}>
+                                                        {school.name}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControl fullWidth variant="outlined">
+                                            <InputLabel>Grado</InputLabel>
+                                            <Select
+                                                value={excelGradeId}
+                                                onChange={(e) => setExcelGradeId(e.target.value)}
+                                                label="Grado"
+                                            >
+                                                <MenuItem value="">
+                                                    <em>Seleccione un grado</em>
+                                                </MenuItem>
+                                                {grades.map(grade => (
+                                                    <MenuItem key={grade.id} value={grade.id}>
+                                                        {grade.grade}-{grade.level}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControl fullWidth variant="outlined">
+                                            <InputLabel>Prueba</InputLabel>
+                                            <Select
+                                                value={excelTestId}
+                                                onChange={(e) => setExcelTestId(e.target.value)}
+                                                label="Prueba"
+                                            >
+                                                <MenuItem value="">
+                                                    <em>Seleccione una prueba</em>
+                                                </MenuItem>
+                                                {tests.map(test => (
+                                                    <MenuItem key={test.id} value={test.id}>
+                                                        {test.name} - {test.date}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <input type="file" accept=".xlsx, .xls" onChange={handleExcelFileChange} />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <Button variant="contained" color="secondary" onClick={handleExcelUpload}>
+                                            Subir Archivo Excel
+                                        </Button>
+                                    </Grid>
+                                </>
+                            )}
                         </Grid>
                     </form>
                     <InscriptionModal

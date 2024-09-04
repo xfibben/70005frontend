@@ -37,6 +37,16 @@ const TestEdit = ({ params }) => {
         endingTime: "",
         time: ""
     });
+
+    // Calculate the index of the first and last result on the current page
+const indexOfLastResult = currentPage * resultsPerPage;
+const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+
+// Slice the results based on the current page
+const currentResults = (sortedResults.length ? sortedResults : testResults).slice(indexOfFirstResult, indexOfLastResult);
+
+
+
     const [inscriptionModalOpen, setInscriptionModalOpen] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState(0);
 
@@ -49,6 +59,7 @@ const TestEdit = ({ params }) => {
         return pageNumbers;
     };
 
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const deleteResult = async (id) => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este resultado?");
         if (!confirmed) {
@@ -395,47 +406,48 @@ const TestEdit = ({ params }) => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                            {(sortedResults.length ? sortedResults : testResults).map((result, index) => (
-                                <TableRow key={result.id}>
-                                    <TableCell>{result.student?.lastName || 'N/A'}</TableCell>
-                                    <TableCell>{result.student?.name || 'N/A'}</TableCell>
-                                    <TableCell>{result.test?.name || 'N/A'}</TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            type="number"
-                                            name="score"
-                                            value={result.score}
-                                            onChange={(e) => handleResultChange(e, index)}
-                                            className="border p-2 w-full"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            name="startingTime"
-                                            value={result.startingTime}
-                                            onChange={(e) => handleResultChange(e, index)}
-                                            className="border p-2 w-full"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField
-                                            name="endingTime"
-                                            value={result.endingTime}
-                                            onChange={(e) => handleResultChange(e, index)}
-                                            className="border p-2 w-full"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button onClick={() => saveResult(index)} variant="contained" color="primary">
-                                            Guardar
-                                        </Button>
-                                        <Button onClick={() => deleteResult(result.id)} variant="contained" color="secondary" className="ml-2">
-                                            Eliminar
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
+                                {currentResults.map((result, index) => (
+                                    <TableRow key={result.id}>
+                                        <TableCell>{result.student?.lastName || 'N/A'}</TableCell>
+                                        <TableCell>{result.student?.name || 'N/A'}</TableCell>
+                                        <TableCell>{result.test?.name || 'N/A'}</TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                type="number"
+                                                name="score"
+                                                value={result.score}
+                                                onChange={(e) => handleResultChange(e, index)}
+                                                className="border p-2 w-full"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                name="startingTime"
+                                                value={result.startingTime}
+                                                onChange={(e) => handleResultChange(e, index)}
+                                                className="border p-2 w-full"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                name="endingTime"
+                                                value={result.endingTime}
+                                                onChange={(e) => handleResultChange(e, index)}
+                                                className="border p-2 w-full"
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button onClick={() => saveResult(index)} variant="contained" color="primary">
+                                                Guardar
+                                            </Button>
+                                            <Button onClick={() => deleteResult(result.id)} variant="contained" color="secondary" className="ml-2">
+                                                Eliminar
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+
 
                         </Table>
                     </TableContainer>
