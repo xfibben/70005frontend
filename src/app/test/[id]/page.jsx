@@ -39,27 +39,16 @@ const TestEdit = ({ params }) => {
     });
 
     // Calculate the index of the first and last result on the current page
-const indexOfLastResult = currentPage * resultsPerPage;
-const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+const currentResults = sortedResults.length ? sortedResults : testResults;
 
-// Slice the results based on the current page
-const currentResults = (sortedResults.length ? sortedResults : testResults).slice(indexOfFirstResult, indexOfLastResult);
 
 
 
     const [inscriptionModalOpen, setInscriptionModalOpen] = useState(false);
     const [selectedStudentId, setSelectedStudentId] = useState(0);
 
-    const generatePageNumbers = () => {
-        const totalResults = sortedResults.length ? sortedResults.length : testResults.length;
-        const pageNumbers = [];
-        for (let i = 1; i <= Math.ceil(totalResults / resultsPerPage); i++) {
-            pageNumbers.push(i);
-        }
-        return pageNumbers;
-    };
+    
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const deleteResult = async (id) => {
         const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este resultado?");
         if (!confirmed) {
@@ -171,6 +160,7 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
         setFilteredStudents(students.filter(student =>
             student.name.toLowerCase().includes(searchTerm) ||
             student.lastName.toLowerCase().includes(searchTerm) ||
+            student.secondName.toLowerCase().includes(searchTerm) ||
             student.dni.toLowerCase().includes(searchTerm)
         ));
     };
@@ -241,18 +231,14 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
         }
     };
 
-    const handleResultChange = (e, index) => {
-        const { name, value } = e.target;
-    
-        setTestResults(prevResults => {
-            const updatedResults = [...prevResults];
-            updatedResults[index] = {
-                ...updatedResults[index],
-                [name]: value
-            };
-            return updatedResults;
-        });
-    };
+    const handleResultChange = (e, resultId) => {
+    const { name, value } = e.target;
+    setTestResults(prevResults => {
+        return prevResults.map(result => 
+            result.id === resultId ? { ...result, [name]: value } : result
+        );
+    });
+};
 
 
 
@@ -392,13 +378,13 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell onClick={() => requestSort('lastName')} className="cursor-pointer">
-                                        Apellido {sortConfig.key === 'lastName' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    <TableCell >
+                                        Apellido P
                                     </TableCell>
                                     <TableCell>Nombre</TableCell>
                                     <TableCell>Nombre del Test</TableCell>
-                                    <TableCell onClick={() => requestSort('score')} className="cursor-pointer">
-                                        Puntaje {sortConfig.key === 'score' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
+                                    <TableCell>
+                                        Puntaje 
                                     </TableCell>
                                     <TableCell>Hora de inicio</TableCell>
                                     <TableCell>Hora de finalización</TableCell>
@@ -416,7 +402,7 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
                                                 type="number"
                                                 name="score"
                                                 value={result.score}
-                                                onChange={(e) => handleResultChange(e, index)}
+                                                onChange={(e) => handleResultChange(e, result.id)}
                                                 className="border p-2 w-full"
                                             />
                                         </TableCell>
@@ -424,7 +410,7 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
                                             <TextField
                                                 name="startingTime"
                                                 value={result.startingTime}
-                                                onChange={(e) => handleResultChange(e, index)}
+                                                onChange={(e) => handleResultChange(e, result.id)}
                                                 className="border p-2 w-full"
                                             />
                                         </TableCell>
@@ -432,7 +418,7 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
                                             <TextField
                                                 name="endingTime"
                                                 value={result.endingTime}
-                                                onChange={(e) => handleResultChange(e, index)}
+                                                onChange={(e) => handleResultChange(e, result.id)}
                                                 className="border p-2 w-full"
                                             />
                                         </TableCell>
@@ -452,13 +438,7 @@ const currentResults = (sortedResults.length ? sortedResults : testResults).slic
                         </Table>
                     </TableContainer>
 
-                    <div className="flex justify-center mt-4">
-                        {generatePageNumbers().map(number => (
-                            <Button key={number} onClick={() => paginate(number)} variant={currentPage === number ? "contained" : "outlined"} color="primary" className="mx-1">
-                                {number}
-                            </Button>
-                        ))}
-                    </div>
+                   
                 </div>
             </div>
         </div>
